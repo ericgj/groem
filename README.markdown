@@ -10,14 +10,14 @@
     app.register do
       icon 'http://www.example.com'
 
-      notification 'started', 'Your thing has started!' do |n|
+      notification :started, 'Your thing has started!' do |n|
         n.header 'Data-Filename'
         n.icon 'path/to/local/file.png'   #=> generates x-growl-resource
         n.sticky
         n.callback 'process', :type => 'confirm'
       end
       
-      notification 'finished', :enabled => true
+      notification :finished, :enabled => true
       
       header 'X-Custom-Header', 'default value'
     end
@@ -26,8 +26,8 @@
     
     app.callbacks do
     
-      when_closed 'started' do |response|
-        # do something with closed responses to 'started' notifications
+      when_closed :started do |response|
+        # do something with closed responses to :started notifications
       end
       
       when_clicked '*/process/confirm' do |response|
@@ -42,6 +42,20 @@
  
 - **Notification**
     
-    resp =  app.notify('started', 'XYZ has started!')
+    #  trigger notify and callbacks
+    response =  app.notify(:started, 'XYZ has started!')
+    
+    #  trigger notify and handle synchronous responses
+    app.notify(:finished, 'ABC has finished!') do |response|
+      response.ok? { # handle OK response }
+      response.error?  { # handle any ERROR response }
+      response.error?(400) { # handle ERROR 400 (not authorized) response }
+    end
+
+    # you could also do this simply
+    response = app.notify(:finished, 'ABC has finished!') 
+    response.ok? { # handle OK response }
+    response.error?  { # handle any ERROR response }
+    response.error?(400) { # handle ERROR 400 (not authorized) response }
     
     
