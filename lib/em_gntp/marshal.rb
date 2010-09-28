@@ -6,26 +6,30 @@ module EM_GNTP
   
     GNTP_PROTOCOL_KEY = 'protocol'
     GNTP_VERSION_KEY = 'version'
-    GNTP_MESSAGETYPE_KEY = 'message_type'
-    GNTP_IS_RESPONSE_KEY = 'is_response'
-  
-    # load GNTP headers into array of 2 hashes:
-    #     - hash of first header
-    #     - hash of rest of headers
+    GNTP_REQUEST_METHOD_KEY = 'request_method'
+    GNTP_RESPONSE_METHOD_KEY = 'response_method'
+    
+    GNTP_ERROR_CODE_OK = 200
+    GNTP_RESPONSE_METHOD_OK = '-OK'
+    
+    # load GNTP headers into array of:
+    #     - status (integer, or nil if request)
+    #     - hash of environment (protocol, version, request_method, response_method, encryption data)
+    #     - hash of headers
     # Note that binary identifiers are resolved.
     # if passed a klass, will return klass.new(out)
     # note entire GNTP message must be passed as input
     def load(input, klass = nil)
-      out = [{}, {}]
+      out = [nil, {}, {}]
       section = :init
       s = StringScanner.new(input)
       until s.eos?
         line = scan_line(s, section)
         case section
         when :first
-          parse_first_header(line, out[0])
+          parse_first_header(line, out[1], out[0])
         when :headers
-          parse_header(line, out[1])
+          parse_header(line, out[2], out[0])
         when :identifier
           id = parse_identifier(line)
         when :identifier_length
@@ -35,7 +39,7 @@ module EM_GNTP
             (1..len).inject('') do |memo, i|
               memo << s.getch; memo
             end
-          resolve_binary_key(id, bin, out[1])
+          resolve_binary_key(id, bin, out[2])
         end
       end
       
@@ -57,53 +61,55 @@ module EM_GNTP
       line = nil
       case state
       when :init
-        line = scanner.scan(/^.+$\r\n/).chomp
+        line = scanner.scan(/^.*$\n/)
         state = :first
       when :first
-        line = scanner.scan(/^.+$\r\n/).chomp
+        line = scanner.scan(/^.*$\n/)
         state = :headers
       when :headers
-        line = scanner.scan(/^.+$\r\n/).chomp
+        line = scanner.scan(/^.*$\n/)
         state = :identifier if line =~ /^\w*identifier:/i
       when :identifier
-        line = scanner.scan(/^.+$\r\n/).chomp
+        line = scanner.scan(/^.*$\n/)
         state = :identifier_length if line =~ /^\w*length:/i
       when :identifier_length
         state = :binary
       when :binary
-        line = scanner.scan(/^.+$\r\n/).chomp
+        line = scanner.scan(/^.*$\n/)
         state = if line =~ /^\w*identifier:/i
                   :identifier
                 else
                   :headers
                 end
       end
-      line
+      line = line.chomp if line
     end
     
-    def parse_first_header(line, hash = {})
+    def parse_first_header(line, hash, status)
       return hash unless line.size > 0
       tokens = line.split(' ')
       proto, vers = tokens[0].split('/')
       msgtype = tokens[1]
       encrypid, ivvalue = if tokens[2]; tokens[2].split(':'); end
       keyhashid = if tokens[3]; tokens[3].split(':')[0]; end
-      keyhash, salt = if tokens[3] && tokens[3].split(':')(1)
+      keyhash, salt = if tokens[3] && tokens[3].split(':')[1]
                         tokens[3].split(':')[1].split('.')
                       end
       hash[GNTP_PROTOCOL_KEY] = proto
       hash[GNTP_VERSION_KEY] = vers
-      hash[GNTP_MESSAGETYPE_KEY] = msgtype
-      hash[GNTP_IS_RESPONSE_KEY] = msgtype[0] == '-'
+      hash[GNTP_REQUEST_METHOD_KEY] = msgtype unless msgtype[0] == '-'
+      hash[GNTP_RESPONSE_METHOD_KEY] = msgtype if msgtype[0] == '-'
+      status = GNTP_ERROR_CODE_OK if msgtype == GNTP_RESPONSE_METHOD_OK
       # TODO the rest
       hash
     end
     
-    def parse_header(line, hash)
+    def parse_header(line, hash, status)
       return hash unless line.size > 0
       key, val = line.split(':', 2).map {|t| t.strip(' ')}
       key = key.downcase.tr('-','_')
       hash[key] = val
+      status = val.to_i if key == 'error_code'
       hash
     end
     

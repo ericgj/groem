@@ -1,0 +1,12 @@
+GEM
+  remote: http://gems.rubyforge.org/
+  specs:
+    eventmachine (0.12.10)
+    minitest (1.7.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  eventmachine
+  minitest
