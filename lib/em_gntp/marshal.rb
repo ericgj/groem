@@ -4,28 +4,33 @@ module EM_GNTP
   module Marshal 
     module Request
       
+      ENVIRONMENT_KEY = 'environment'
+      HEADERS_KEY = 'headers'
+      NOTIFICATIONS_KEY = 'notifications'
+      
       GNTP_PROTOCOL_KEY = 'protocol'
       GNTP_VERSION_KEY = 'version'
       GNTP_REQUEST_METHOD_KEY = 'request_method'
+      GNTP_REGISTER_METHOD = 'REGISTER'
       
-      
-      # load GNTP headers into array of:
-      #     - hash of environment (protocol, version, request_method, encryption data)
-      #     - hash of headers
-      #     - hash of notifications keyed by name (REGISTER requests only, otherwise empty)
+      # load GNTP headers into hash of:
+      #     'environment' => hash of environment (protocol, version, request_method, encryption data)
+      #     'headers' =>  hash of headers
+      #     'notifications' => hash of notifications keyed by name (REGISTER requests only, otherwise empty)
       # Note that binary identifiers are resolved in both headers and notifications.
       # if passed a klass, will return klass.new(out)
       # note entire GNTP message must be passed as input
       def load(input, klass = nil)
         env, hdrs, notifs = {}, {}, {}
-        notif_name, id, len, bin = nil
+        meth, notif_name, id, len, bin = nil
         section = :init
         s = StringScanner.new(input)
         until s.eos?
-          line, section = scan_line(s, section)
+          line, section = scan_line(s, meth, section)
           case section
           when :first
             parse_first_header(line, env)
+            meth = env[GNTP_REQUEST_METHOD_KEY]
           when :headers
             parse_header(line, hdrs)
           when :notification_start
@@ -46,7 +51,10 @@ module EM_GNTP
           end
         end
         
-        out = [env, hdrs, notifs]
+        out = { ENVIRONMENT_KEY => env, 
+                HEADERS_KEY => hdrs, 
+                NOTIFICATIONS_KEY => notifs
+              }
         klass ? klass.new(out) : out
       end
       
@@ -62,7 +70,7 @@ module EM_GNTP
       
       protected
       
-      def scan_line(scanner, state)
+      def scan_line(scanner, method, state)
         line = nil
         new_state = state
         case state
@@ -76,7 +84,8 @@ module EM_GNTP
           line = scanner.scan(/.*\n/)
           new_state = if line =~ /^\w*identifier\w*:/i
                         :identifier_start 
-                      elsif line =~ /^\w*notification-name\w*:/i
+                      elsif method == GNTP_REGISTER_METHOD && \
+                            line =~ /^\w*notification-name\w*:/i
                         :notification_start
                       else
                         :headers
@@ -88,7 +97,8 @@ module EM_GNTP
           line = scanner.scan(/.*\n/)
           new_state = if line =~ /^\w*identifier\w*:/i
                         :identifier_start 
-                      elsif line =~ /^\w*notification-name\w*:/i
+                      elsif method == GNTP_REGISTER_METHOD && \
+                            line =~ /^\w*notification-name\w*:/i
                         :notification_start
                       else
                         :notification
@@ -102,7 +112,8 @@ module EM_GNTP
           line = scanner.scan(/.*\n/)
           new_state = if line =~ /^\w*identifier\w*:/i
                         :identifier_start 
-                      elsif line =~ /^\w*notification-name\w*:/i
+                      elsif method == GNTP_REGISTER_METHOD && \
+                            line =~ /^\w*notification-name\w*:/i
                         :notification_start
                       else
                         :headers
