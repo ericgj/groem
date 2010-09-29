@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Marshal::Request#load' do
+describe 'EM_GNTP::Marshal::Request.load' do
 
   #------ REGISTER requests --------#
   
@@ -24,7 +24,7 @@ X-Language : English
 
 __________
       dummy = Class.new { include(EM_GNTP::Marshal::Request) }
-      @subject = dummy.new.load(@input)
+      @subject = dummy.load(@input, false)
     end
     
     it 'should return a hash with keys for environment, headers, and notifications' do
@@ -37,8 +37,8 @@ __________
       @subject['environment']['version'].must_equal '1.0'
     end
 
-    it 'environment hash should have request_method == REGISTER' do
-      @subject['environment']['request_method'].must_equal 'REGISTER'
+    it 'environment hash should have request_action == REGISTER' do
+      @subject['environment']['request_action'].must_equal 'REGISTER'
     end
     
     it 'headers hash should have application_name == SurfWriter' do
@@ -112,7 +112,7 @@ X-Language: Spanish
 
 __________
       dummy = Class.new { include(EM_GNTP::Marshal::Request) }
-      @subject = dummy.new.load(@input)
+      @subject = dummy.load(@input, false)
     end
     
     it 'should return a hash with keys for environment, headers, and notifications' do
@@ -192,7 +192,7 @@ Notification-Icon : http://www.whatever.com/poo.jpg
 
 __________
       dummy = Class.new { include(EM_GNTP::Marshal::Request) }
-      @subject = dummy.new.load(@input)
+      @subject = dummy.load(@input, false)
     end
 
     it 'should return a hash with keys for environment, headers, and notifications' do
@@ -205,8 +205,8 @@ __________
       @subject['environment']['version'].must_equal '1.0'
     end
 
-    it 'environment hash should have request_method == NOTIFY' do
-      @subject['environment']['request_method'].must_equal 'NOTIFY'
+    it 'environment hash should have request_action == NOTIFY' do
+      @subject['environment']['request_action'].must_equal 'NOTIFY'
     end
     
     it 'headers hash should have application_name == SurfWriter' do
@@ -246,7 +246,7 @@ __________
 end
   
   
-describe 'EM_GNTP::Marshal::Response#load' do
+describe 'EM_GNTP::Marshal::Response.load' do
   
   
   describe 'when valid REGISTER response -OK' do

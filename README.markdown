@@ -1,5 +1,6 @@
 ## em-gntp
-### An Eventmachine-based Growl Notification Transport Protocol (GNTP) client 
+### An Eventmachine-based 
+### Growl Notification Transport Protocol (GNTP) client 
 
 #### Examples of usage:
 

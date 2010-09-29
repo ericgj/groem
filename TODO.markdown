@@ -1,3 +1,10 @@
+## Sept 29
+
+1. Test harness for client (dummy server)
+2. Spec Marshal::Response.load, .dump
+3. Response
+
+
 ## This is what I see as the order of work
 
 ### First the infrastructure
