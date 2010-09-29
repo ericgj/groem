@@ -11,15 +11,28 @@ module EM_GNTP
       GNTP_PROTOCOL_KEY = 'protocol'
       GNTP_VERSION_KEY = 'version'
       GNTP_REQUEST_METHOD_KEY = 'request_method'
+
       GNTP_REGISTER_METHOD = 'REGISTER'
+      GNTP_NOTIFY_METHOD = 'NOTIFY'
+      GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
       
-      # load GNTP headers into hash of:
+      #
+      # Load GNTP request into hash of:
       #     'environment' => hash of environment (protocol, version, request_method, encryption data)
       #     'headers' =>  hash of headers
       #     'notifications' => hash of notifications keyed by name (REGISTER requests only, otherwise empty)
+      #
       # Note that binary identifiers are resolved in both headers and notifications.
-      # if passed a klass, will return klass.new(out)
-      # note entire GNTP message must be passed as input
+      #
+      # If passed an optional klass, will return klass.new(out), otherwise just the hash.
+      #
+      # Note entire GNTP message must be passed as input.
+      #
+      # No semantic validation of input is done, 
+      #   and all key values are stored as strings, not casted
+      #
+      # Syntactic validation may be implemented in the future.
+      #
       def load(input, klass = nil)
         env, hdrs, notifs = {}, {}, {}
         meth, notif_name, id, len, bin = nil
