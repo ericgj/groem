@@ -1,8 +1,8 @@
 ## Sept 29
 
-1. Test harness for client (dummy server)
-2. Spec Marshal::Response.load, .dump
-3. Spec Marshal::Request.dump
+1. Spec Marshal::Request.dump    -- redo key constants to be dasherized
+2. Test harness for client (dummy server)
+3. Spec Marshal::Response.load
 4. Response
 
 

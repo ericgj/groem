@@ -11,12 +11,17 @@ module EM_GNTP
     GNTP_VERSION_KEY = 'version'
     GNTP_REQUEST_METHOD_KEY = 'request_action'
     GNTP_ENCRYPTION_ID_KEY = 'encryption_id'
+    GNTP_NOTIFICATION_COUNT_KEY = 'notification_count'
     GNTP_NOTIFICATION_NAME_KEY = 'notification_name'
     
     GNTP_REGISTER_METHOD = 'REGISTER'
     GNTP_NOTIFY_METHOD = 'NOTIFY'
     GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
   
+    GNTP_DEFAULT_ENVIRONMENT = {'protocol' => 'GNTP',
+                                'version' => '1.0',
+                                'encryption_id' => 'NONE',
+                               }
     def self.included(mod)
       self.constants.each do |c|
         mod.const_set(c.to_s, self.const_get(c.to_s))
@@ -39,23 +44,23 @@ module EM_GNTP
       # TODO: calculate UUIDs for binary sections and output them
       def dump
         out = []
-        env = self[ENVIRONMENT_KEY]
+        env = GNTP_DEFAULT_ENVIRONMENT.merge(self[ENVIRONMENT_KEY])
         hdrs = self[HEADERS_KEY]
         notifs = self[NOTIFICATIONS_KEY]
         
         out << "#{env[GNTP_PROTOCOL_KEY]}/#{env[GNTP_VERSION_KEY]} #{env[GNTP_REQUEST_METHOD_KEY]} #{env[GNTP_ENCRYPTION_ID_KEY]}"
         hdrs.each_pair do |k, v|
           unless v.nil?
-            out << "#{k.tr('_','-')}: #{v}"
+            out << "#{k.to_s.tr('_','-')}: #{v}"
           end
         end
+        out << "#{GNTP_NOTIFICATION_COUNT_KEY.dup.tr('_','-')}: #{notifs.keys.count}"
         out << nil
-        notifs.each do |n|
-          name = n.delete(GNTP_NOTIFICATION_NAME_KEY)
-          out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
-          n.each_pair do |k, v|
-            unless v.nil?
-              out << "#{k.tr('_','-')}: #{v}"
+        notifs.each_pair do |name, pairs|
+          out << "#{GNTP_NOTIFICATION_NAME_KEY.dup.tr('_','-')}: #{name}"
+          pairs.each do |pair|
+            unless pair[1].nil?
+              out << "#{pair[0].to_s.tr('_','-')}: #{pair[1]}"
             end
           end
           out << nil
@@ -177,7 +182,7 @@ module EM_GNTP
                           :headers
                         end
           end
-          puts "state #{state} --> #{new_state}"
+          #puts "state #{state} --> #{new_state}"
           state = new_state
           line = line.chomp if line
           [line, state]

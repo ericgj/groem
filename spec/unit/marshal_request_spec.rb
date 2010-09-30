@@ -244,25 +244,84 @@ __________
   end
   
 end
+
+
+
+#---------- dump -----------#
   
-  
-describe 'EM_GNTP::Marshal::Response.load' do
-  
-  
-  describe 'when valid REGISTER response -OK' do
-  
+module MarshalRequestDumpHelper
+
+  def self.dummy_request(env = {}, hdrs = {}, notifs = {})
+    klass = Class.new { 
+              include(EM_GNTP::Marshal::Request) 
+              require 'forwardable'
+              extend Forwardable
+              def_delegators :@raw, :[], :[]=
+              def raw; @raw ||= {}; end
+              def initialize(input = {})
+                @raw = input
+              end
+            }
+    klass.new({'environment' => env, 'headers' => hdrs, 'notifications' => notifs})
   end
   
-  describe 'when valid REGISTER response -ERROR' do
+end
+
+
+describe 'EM_GNTP::Marshal::Request#dump' do
   
+  describe 'when valid REGISTER request with one notification, no binaries' do
+    
+    before do
+      @input_env = { 'protocol' => 'GNTP',
+                     'version' => '1.0',
+                     'request_action' => 'REGISTER',
+                     'encryption_id' => 'NONE'
+                    }
+      @input_hdrs = {'application_name' => 'SurfWriter',
+                     'application_icon' => 'http://www.site.org/image.jpg'
+                    }
+      @input_notifs = { 'Download Complete' => {
+                            'notification_display_name' => 'Download completed',
+                            'notification_enabled' => 'True',
+                            'x_language' => 'English',
+                            'x_timezone' => 'PST'
+                        }
+                      }
+
+      @subject = MarshalRequestDumpHelper.dummy_request(
+                   @input_env, @input_hdrs, @input_notifs).dump
+    end
+    
+    it 'should output a string' do
+      @subject.class.must_be_same_as String
+      puts; puts @subject
+    end
+    
+    it 'should output 10 lines terminated by CRLF' do
+      lines = @subject.split("\r\n")
+      lines.size.must_equal 10
+    end
+    
+    it 'should output the first line as the standard GNTP first header' do
+      lines = @subject.split("\r\n")
+      lines[0].must_match(/^#{@input_env['protocol']}\/#{@input_env['version']}\s+#{@input_env['request_action']}\s+#{@input_env['encryption_id']}\s*$/i)
+    end
+    
+    it 'should output the notification count == count of input notifications' do
+      @subject.must_match(/^\s*notification-count\s*:\s*#{@input_notifs.keys.count}\s*$/i)
+    end
+    
+    it 'should have a notification-name line for each input notification' do
+      @input_notifs.each_pair do |name, pairs|
+        @subject.must_match(/^\s*notification-name\s*:\s*#{name}\s*$/i)
+      end
+    end
+    
   end
   
-  describe 'when valid NOTIFY response -OK' do
+  describe 'when no environment' do
   
   end
-  
-  describe 'when valid NOTIFY response -ERROR' do
-  
-  end
-  
+    
 end
