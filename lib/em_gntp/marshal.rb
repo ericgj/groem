@@ -1,37 +1,74 @@
 require 'strscan'
 
 module EM_GNTP
+  
+  module Constants
+    ENVIRONMENT_KEY = 'environment'
+    HEADERS_KEY = 'headers'
+    NOTIFICATIONS_KEY = 'notifications'
+    
+    GNTP_PROTOCOL_KEY = 'protocol'
+    GNTP_VERSION_KEY = 'version'
+    GNTP_REQUEST_METHOD_KEY = 'request_action'
+    GNTP_ENCRYPTION_ID_KEY = 'encryption_id'
+    GNTP_NOTIFICATION_NAME_KEY = 'notification_name'
+    
+    GNTP_REGISTER_METHOD = 'REGISTER'
+    GNTP_NOTIFY_METHOD = 'NOTIFY'
+    GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
+  
+    def self.included(mod)
+      self.constants.each do |c|
+        mod.const_set(c.to_s, self.const_get(c.to_s))
+      end
+    end
+    
+  end
+  
   module Marshal 
     module Request
-    
+      include EM_GNTP::Constants
+      
       def self.included(mod)
         mod.extend ClassMethods
       end
     
-      # write to GNTP headers,
-      # calculate UUIDs for binary sections and output them
-      # do encryption (if required)
-      # print lines as \r\n
-      # append \r\n\r\n
+      # write GNTP request string, print lines as \r\n
+      # assumes that including class delegates :[] to raw hash 
+      #   (described below under load).
+      # TODO: calculate UUIDs for binary sections and output them
       def dump
-        #TODO
+        out = []
+        env = self[ENVIRONMENT_KEY]
+        hdrs = self[HEADERS_KEY]
+        notifs = self[NOTIFICATIONS_KEY]
+        
+        out << "#{env[GNTP_PROTOCOL_KEY]}/#{env[GNTP_VERSION_KEY]} #{env[GNTP_REQUEST_METHOD_KEY]} #{env[GNTP_ENCRYPTION_ID_KEY]}"
+        hdrs.each_pair do |k, v|
+          unless v.nil?
+            out << "#{k.tr('_','-')}: #{v}"
+          end
+        end
+        out << nil
+        notifs.each do |n|
+          name = n.delete(GNTP_NOTIFICATION_NAME_KEY)
+          out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
+          n.each_pair do |k, v|
+            unless v.nil?
+              out << "#{k.tr('_','-')}: #{v}"
+            end
+          end
+          out << nil
+        end
+        out << nil
+        out << nil
+        
+        out.join("\r\n")
       end
         
            
       module ClassMethods
-      
-        ENVIRONMENT_KEY = 'environment'
-        HEADERS_KEY = 'headers'
-        NOTIFICATIONS_KEY = 'notifications'
-        
-        GNTP_PROTOCOL_KEY = 'protocol'
-        GNTP_VERSION_KEY = 'version'
-        GNTP_REQUEST_METHOD_KEY = 'request_action'
 
-        GNTP_REGISTER_METHOD = 'REGISTER'
-        GNTP_NOTIFY_METHOD = 'NOTIFY'
-        GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
-        
         #
         # Load GNTP request into hash of:
         #     'environment' => hash of environment (protocol, version, request_method, encryption data)
@@ -159,6 +196,7 @@ module EM_GNTP
           hash[GNTP_PROTOCOL_KEY] = proto
           hash[GNTP_VERSION_KEY] = vers
           hash[GNTP_REQUEST_METHOD_KEY] = msgtype
+          hash[GNTP_ENCRYPTION_ID_KEY] = encrypid
           # TODO the rest
           hash
         end

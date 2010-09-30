@@ -2,7 +2,8 @@
 
 1. Test harness for client (dummy server)
 2. Spec Marshal::Response.load, .dump
-3. Response
+3. Spec Marshal::Request.dump
+4. Response
 
 
 ## This is what I see as the order of work
