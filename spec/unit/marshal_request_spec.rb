@@ -295,12 +295,18 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     
     it 'should output a string' do
       @subject.class.must_be_same_as String
-      puts; puts @subject
+      puts
+      puts '------------EM_GNTP::Marshal::Request#dump when valid REGISTER request with one notification, no binaries ------------'
+      puts @subject
     end
     
     it 'should output 10 lines terminated by CRLF' do
       lines = @subject.split("\r\n")
       lines.size.must_equal 10
+    end
+    
+    it 'should end with 2 CRLF' do
+      @subject[-4,4].must_equal "\r\n\r\n"
     end
     
     it 'should output the first line as the standard GNTP first header' do
@@ -320,8 +326,73 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     
   end
   
+  describe 'when valid NOTIFY request with one notification, no binaries' do
+  
+    before do
+      @input_env = { 'protocol' => 'GNTP',
+                     'version' => '1.0',
+                     'request_action' => 'NOTIFY',
+                     'encryption_id' => 'NONE'
+                    }
+      @input_hdrs = {'application_name' => 'SurfWriter',
+                     'notification_name'=> 'Download Complete',
+                     'notification_id' => '999',
+                     'notification_title' => 'XYZ finished downloading',
+                     'notification_sticky' => 'True',
+                     'notification_icon' => 'http://www.whatever.com/poo.jpg'
+                    }
+      @subject = MarshalRequestDumpHelper.dummy_request(
+                   @input_env, @input_hdrs, {}).dump
+    end
+    
+    it 'should output a string' do
+      @subject.class.must_be_same_as String
+      puts
+      puts '------------EM_GNTP::Marshal::Request#dump when valid NOTIFY request with one notification, no binaries ------------'
+      puts @subject
+    end
+    
+    it 'should output the first line as the standard GNTP first header for NOTIFY request' do
+      lines = @subject.split("\r\n")
+      lines[0].must_match(/^GNTP\/1.0\s+NOTIFY\s+NONE\s*$/i)
+    end
+    
+    it 'should not output a notification-count line' do
+      @subject.wont_match(/^\s*notification-count\s*:\s*\d+\s*$/i)
+    end
+      
+  end
+  
   describe 'when no environment' do
   
+    before do
+      @input_hdrs = {'application_name' => 'SurfWriter',
+                     'notification_name'=> 'Download Complete',
+                     'notification_id' => '999',
+                     'notification_title' => 'XYZ finished downloading',
+                     'notification_sticky' => 'True',
+                     'notification_icon' => 'http://www.whatever.com/poo.jpg'
+                    }
+      @subject = MarshalRequestDumpHelper.dummy_request(
+                   {}, @input_hdrs, {}).dump
+    end
+    
+    it 'should output a string' do
+      @subject.class.must_be_same_as String
+      puts
+      puts '------------EM_GNTP::Marshal::Request#dump when no environment ------------'
+      puts @subject
+    end
+    
+    it 'should output the first line as the default GNTP first header for NOTIFY request' do
+      lines = @subject.split("\r\n")
+      lines[0].must_match(/^GNTP\/1.0\s+NOTIFY\s+NONE\s*$/i)
+    end
+    
+    it 'should not output a notification-count line' do
+      @subject.wont_match(/^\s*notification-count\s*:\s*\d+\s*$/i)
+    end
+    
   end
     
 end

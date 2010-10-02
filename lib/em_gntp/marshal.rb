@@ -3,6 +3,21 @@ require 'strscan'
 module EM_GNTP
   
   module Constants
+
+    def self.included(mod)
+      self.constants.each do |c|
+        mod.const_set(c.to_s, self.const_get(c.to_s))
+      end
+    end
+    
+    def underscorize(key)
+      key.dup.downcase.tr('-','_')
+    end
+    
+    def dasherize(key)
+      key.dup.tr('_','-')
+    end
+    
     ENVIRONMENT_KEY = 'environment'
     HEADERS_KEY = 'headers'
     NOTIFICATIONS_KEY = 'notifications'
@@ -11,22 +26,18 @@ module EM_GNTP
     GNTP_VERSION_KEY = 'version'
     GNTP_REQUEST_METHOD_KEY = 'request_action'
     GNTP_ENCRYPTION_ID_KEY = 'encryption_id'
-    GNTP_NOTIFICATION_COUNT_KEY = 'notification_count'
-    GNTP_NOTIFICATION_NAME_KEY = 'notification_name'
+    GNTP_NOTIFICATION_COUNT_KEY = 'Notification-Count'
+    GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
     
     GNTP_REGISTER_METHOD = 'REGISTER'
     GNTP_NOTIFY_METHOD = 'NOTIFY'
     GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
   
-    GNTP_DEFAULT_ENVIRONMENT = {'protocol' => 'GNTP',
-                                'version' => '1.0',
-                                'encryption_id' => 'NONE',
+    GNTP_DEFAULT_ENVIRONMENT = {GNTP_PROTOCOL_KEY => 'GNTP',
+                                GNTP_VERSION_KEY => '1.0',
+                                GNTP_REQUEST_METHOD_KEY => 'NOTIFY',
+                                GNTP_ENCRYPTION_ID_KEY => 'NONE'
                                }
-    def self.included(mod)
-      self.constants.each do |c|
-        mod.const_set(c.to_s, self.const_get(c.to_s))
-      end
-    end
     
   end
   
@@ -48,19 +59,22 @@ module EM_GNTP
         hdrs = self[HEADERS_KEY]
         notifs = self[NOTIFICATIONS_KEY]
         
-        out << "#{env[GNTP_PROTOCOL_KEY]}/#{env[GNTP_VERSION_KEY]} #{env[GNTP_REQUEST_METHOD_KEY]} #{env[GNTP_ENCRYPTION_ID_KEY]}"
+        out << "#{env[GNTP_PROTOCOL_KEY]}" + 
+               "/#{env[GNTP_VERSION_KEY]} "+
+               "#{env[GNTP_REQUEST_METHOD_KEY]} "+
+               "#{env[GNTP_ENCRYPTION_ID_KEY]}"
         hdrs.each_pair do |k, v|
           unless v.nil?
             out << "#{k.to_s.tr('_','-')}: #{v}"
           end
         end
-        out << "#{GNTP_NOTIFICATION_COUNT_KEY.dup.tr('_','-')}: #{notifs.keys.count}"
+        out << "#{GNTP_NOTIFICATION_COUNT_KEY}: #{notifs.keys.count}"
         out << nil
         notifs.each_pair do |name, pairs|
-          out << "#{GNTP_NOTIFICATION_NAME_KEY.dup.tr('_','-')}: #{name}"
+          out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
           pairs.each do |pair|
             unless pair[1].nil?
-              out << "#{pair[0].to_s.tr('_','-')}: #{pair[1]}"
+              out << "#{dasherize(pair[0])}: #{pair[1]}"
             end
           end
           out << nil
@@ -73,7 +87,8 @@ module EM_GNTP
         
            
       module ClassMethods
-
+        include EM_GNTP::Constants
+        
         #
         # Load GNTP request into hash of:
         #     'environment' => hash of environment (protocol, version, request_method, encryption data)
@@ -102,7 +117,7 @@ module EM_GNTP
             case section
             when :first
               parse_first_header(line, env)
-              meth = env[GNTP_REQUEST_METHOD_KEY]
+              meth = env[underscorize(GNTP_REQUEST_METHOD_KEY)]
             when :headers
               parse_header(line, hdrs)
             when :notification_start
@@ -198,10 +213,10 @@ module EM_GNTP
           keyhash, salt = if tokens[3] && tokens[3].split(':')[1]
                             tokens[3].split(':')[1].split('.')
                           end
-          hash[GNTP_PROTOCOL_KEY] = proto
-          hash[GNTP_VERSION_KEY] = vers
-          hash[GNTP_REQUEST_METHOD_KEY] = msgtype
-          hash[GNTP_ENCRYPTION_ID_KEY] = encrypid
+          hash[underscorize(GNTP_PROTOCOL_KEY)] = proto
+          hash[underscorize(GNTP_VERSION_KEY)] = vers
+          hash[underscorize(GNTP_REQUEST_METHOD_KEY)] = msgtype
+          hash[underscorize(GNTP_ENCRYPTION_ID_KEY)] = encrypid
           # TODO the rest
           hash
         end
@@ -250,10 +265,10 @@ module EM_GNTP
           hash
         end
       
-      end
+      end  # GNTP::Marshal::Request::ClassMethods
             
-    end
-    
+    end   # GNTP::Marshal::Request
+  
   end
   
 end
