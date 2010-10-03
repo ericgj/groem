@@ -11,11 +11,11 @@ module EM_GNTP
     end
     
     def underscorize(key)
-      key.dup.downcase.tr('-','_')
+      key.to_s.downcase.tr('-','_')
     end
     
     def dasherize(key)
-      key.dup.tr('_','-')
+      key.to_s.tr('_','-')
     end
     
     ENVIRONMENT_KEY = 'environment'
@@ -65,20 +65,24 @@ module EM_GNTP
                "#{env[GNTP_ENCRYPTION_ID_KEY]}"
         hdrs.each_pair do |k, v|
           unless v.nil?
-            out << "#{k.to_s.tr('_','-')}: #{v}"
+            out << "#{dasherize(k)}: #{v}"
           end
         end
-        out << "#{GNTP_NOTIFICATION_COUNT_KEY}: #{notifs.keys.count}"
-        out << nil
-        notifs.each_pair do |name, pairs|
-          out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
-          pairs.each do |pair|
-            unless pair[1].nil?
-              out << "#{dasherize(pair[0])}: #{pair[1]}"
-            end
-          end
+        
+        if env[GNTP_REQUEST_METHOD_KEY] == GNTP_REGISTER_METHOD
+          out << "#{GNTP_NOTIFICATION_COUNT_KEY}: #{notifs.keys.count}"
           out << nil
+          notifs.each_pair do |name, pairs|
+            out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
+            pairs.each do |pair|
+              unless pair[1].nil?
+                out << "#{dasherize(pair[0])}: #{pair[1]}"
+              end
+            end
+            out << nil
+          end
         end
+        
         out << nil
         out << nil
         
@@ -269,6 +273,34 @@ module EM_GNTP
             
     end   # GNTP::Marshal::Request
   
-  end
+  
+    module Response
+      include EM_GNTP::Constants
+      
+      def self.included(mod)
+        mod.extend ClassMethods
+      end
+    
+      def dump
+
+      end
+      
+      module ClassMethods
+        include EM_GNTP::Constants
+      
+        # Load GNTP response into hash of:
+        #     'environment' => hash of environment (protocol, version, response_type, encryption id)
+        #     'headers' =>  hash of headers
+        #     'callback' => hash of callback headers (for callback responses)
+        def load(input, klass = self.class)
+        
+        end
+        
+      end
+      
+    end  # GNTP::Marshal::Response
+    
+    
+  end   # GNTP::Marshal
   
 end

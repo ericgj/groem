@@ -1,6 +1,5 @@
-## Sept 29
+## Oct 2
 
-1. Spec Marshal::Request.dump    -- redo key constants to be dasherized
 2. Test harness for client (dummy server)
 3. Spec Marshal::Response.load
 4. Response
