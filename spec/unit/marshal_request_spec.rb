@@ -37,8 +37,8 @@ __________
       @subject['environment']['version'].must_equal '1.0'
     end
 
-    it 'environment hash should have request_action == REGISTER' do
-      @subject['environment']['request_action'].must_equal 'REGISTER'
+    it 'environment hash should have request_method == REGISTER' do
+      @subject['environment']['request_method'].must_equal 'REGISTER'
     end
     
     it 'headers hash should have application_name == SurfWriter' do
@@ -205,8 +205,8 @@ __________
       @subject['environment']['version'].must_equal '1.0'
     end
 
-    it 'environment hash should have request_action == NOTIFY' do
-      @subject['environment']['request_action'].must_equal 'NOTIFY'
+    it 'environment hash should have request_method == NOTIFY' do
+      @subject['environment']['request_method'].must_equal 'NOTIFY'
     end
     
     it 'headers hash should have application_name == SurfWriter' do
@@ -275,7 +275,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     before do
       @input_env = { 'protocol' => 'GNTP',
                      'version' => '1.0',
-                     'request_action' => 'REGISTER',
+                     'request_method' => 'REGISTER',
                      'encryption_id' => 'NONE'
                     }
       @input_hdrs = {'application_name' => 'SurfWriter',
@@ -311,7 +311,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     
     it 'should output the first line as the standard GNTP first header' do
       lines = @subject.split("\r\n")
-      lines[0].must_match(/^#{@input_env['protocol']}\/#{@input_env['version']}\s+#{@input_env['request_action']}\s+#{@input_env['encryption_id']}\s*$/i)
+      lines[0].must_match(/^#{@input_env['protocol']}\/#{@input_env['version']}\s+#{@input_env['request_method']}\s+#{@input_env['encryption_id']}\s*$/i)
     end
     
     it 'should output the notification count == count of input notifications' do
@@ -331,7 +331,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     before do
       @input_env = { 'protocol' => 'GNTP',
                      'version' => '1.0',
-                     'request_action' => 'NOTIFY',
+                     'request_method' => 'NOTIFY',
                      'encryption_id' => 'NONE'
                     }
       @input_hdrs = {'application_name' => 'SurfWriter',

@@ -24,20 +24,30 @@ module EM_GNTP
     
     GNTP_PROTOCOL_KEY = 'protocol'
     GNTP_VERSION_KEY = 'version'
-    GNTP_REQUEST_METHOD_KEY = 'request_action'
+    GNTP_REQUEST_METHOD_KEY = 'request_method'
     GNTP_ENCRYPTION_ID_KEY = 'encryption_id'
     GNTP_NOTIFICATION_COUNT_KEY = 'Notification-Count'
     GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
-    
+        
     GNTP_REGISTER_METHOD = 'REGISTER'
     GNTP_NOTIFY_METHOD = 'NOTIFY'
     GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
-  
+      
     GNTP_DEFAULT_ENVIRONMENT = {GNTP_PROTOCOL_KEY => 'GNTP',
                                 GNTP_VERSION_KEY => '1.0',
                                 GNTP_REQUEST_METHOD_KEY => 'NOTIFY',
                                 GNTP_ENCRYPTION_ID_KEY => 'NONE'
                                }
+    
+    GNTP_RESPONSE_METHOD_KEY = 'response_method'
+    GNTP_ERROR_CODE_KEY = 'Error-Code'
+    GNTP_NOTIFICATION_CALLBACK_RESULT_KEY = 'Notification-Callback-Result'
+    
+    GNTP_OK_RESPONSE = '-OK'
+    GNTP_ERROR_RESPONSE = '-ERROR'
+    GNTP_CALLBACK_RESPONSE = '-CALLBACK'
+  
+    GNTP_ERROR_CODE_OK = '0'
     
   end
   
@@ -59,17 +69,17 @@ module EM_GNTP
         hdrs = self[HEADERS_KEY]
         notifs = self[NOTIFICATIONS_KEY]
         
-        out << "#{env[GNTP_PROTOCOL_KEY]}" + 
-               "/#{env[GNTP_VERSION_KEY]} "+
-               "#{env[GNTP_REQUEST_METHOD_KEY]} "+
-               "#{env[GNTP_ENCRYPTION_ID_KEY]}"
+        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
+               "#{env[underscorize(GNTP_REQUEST_METHOD_KEY)]} "+
+               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
         hdrs.each_pair do |k, v|
           unless v.nil?
             out << "#{dasherize(k)}: #{v}"
           end
         end
         
-        if env[GNTP_REQUEST_METHOD_KEY] == GNTP_REGISTER_METHOD
+        if env[underscorize(GNTP_REQUEST_METHOD_KEY)] == GNTP_REGISTER_METHOD
           out << "#{GNTP_NOTIFICATION_COUNT_KEY}: #{notifs.keys.count}"
           out << nil
           notifs.each_pair do |name, pairs|
@@ -228,7 +238,7 @@ module EM_GNTP
         def parse_header(line, hash)
           return hash unless line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          key = key.downcase.tr('-','_')
+          key = underscorize(key)
           hash[key] = val
           hash
         end
@@ -242,7 +252,7 @@ module EM_GNTP
         def parse_notification_header(line, name, hash)
           return hash unless line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          key = key.downcase.tr('-','_')
+          key = underscorize(key)
           (hash[name] ||= {})[key] = val
           hash      
         end
@@ -282,19 +292,89 @@ module EM_GNTP
       end
     
       def dump
-
+        #TODO
       end
       
       module ClassMethods
         include EM_GNTP::Constants
       
-        # Load GNTP response into hash of:
-        #     'environment' => hash of environment (protocol, version, response_type, encryption id)
-        #     'headers' =>  hash of headers
-        #     'callback' => hash of callback headers (for callback responses)
+        # Load GNTP response into array of:
+        #     status  (error code or '0' for OK) 
+        #     hash of headers  (except error code and callback result)
+        #     callback result (for callback responses, otherwise nil)
+        #
+        # Note this is explicitly modeled after Rack's interface
+        #
         def load(input, klass = self.class)
-        
+          env, hdrs = {}, {}
+          status, meth, cb_rslt = nil
+          section = :init
+          s = StringScanner.new(input)
+          until s.eos?
+            line, section = scan_line(s, meth, section)
+            case section
+            when :first
+              parse_first_header(line, env)
+            when :headers
+              parse_header(line, hdrs)
+            end
+          end
+          
+          # pull out status and callback result
+          status = hdrs.delete(underscorize(GNTP_ERROR_CODE_KEY))
+          cb_rslt = hdrs.delete(underscorize(GNTP_NOTIFICATION_CALLBACK_RESULT_KEY))
+          
+          # set status OK unless already set by error code and unless -ERROR response
+          meth = env[underscorize(GNTP_RESPONSE_METHOD_KEY)]
+          status ||= GNTP_ERROR_CODE_OK unless meth == GNTP_ERROR_RESPONSE
+          
+          out = [ status, hdrs, cb_rslt ]
+                
+          klass ? klass.new(out) : out
         end
+        
+        protected
+        
+        def scan_line(scanner, method, state)
+          line = nil
+          new_state = state
+          case state
+          when :init
+            line = scanner.scan(/.*\n/)
+            new_state = :first
+          when :first
+            line = scanner.scan(/.*\n/)
+            new_state = :headers
+          when :headers
+            line = scanner.scan(/.*\n/)
+            new_state = :headers
+          end
+          #puts "state #{state} --> #{new_state}"
+          state = new_state
+          line = line.chomp if line
+          [line, state]
+        end
+        
+        def parse_first_header(line, hash)
+          return hash unless line.size > 0
+          tokens = line.split(' ')
+          proto, vers = tokens[0].split('/')
+          msgtype = tokens[1]
+          encrypid = tokens[2]
+          hash[underscorize(GNTP_PROTOCOL_KEY)] = proto
+          hash[underscorize(GNTP_VERSION_KEY)] = vers
+          hash[underscorize(GNTP_RESPONSE_METHOD_KEY)] = msgtype
+          hash[underscorize(GNTP_ENCRYPTION_ID_KEY)] = encrypid
+          hash
+        end
+        
+        def parse_header(line, hash)
+          return hash unless line.size > 0
+          key, val = line.split(':', 2).map {|t| t.strip }
+          key = underscorize(key)
+          hash[key] = val
+          hash
+        end        
         
       end
       
