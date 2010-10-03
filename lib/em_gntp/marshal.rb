@@ -26,9 +26,7 @@ module EM_GNTP
     GNTP_VERSION_KEY = 'version'
     GNTP_REQUEST_METHOD_KEY = 'request_method'
     GNTP_ENCRYPTION_ID_KEY = 'encryption_id'
-    GNTP_NOTIFICATION_COUNT_KEY = 'Notification-Count'
-    GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
-        
+    
     GNTP_REGISTER_METHOD = 'REGISTER'
     GNTP_NOTIFY_METHOD = 'NOTIFY'
     GNTP_SUBSCRIBE_METHOD = 'SUBSCRIBE'
@@ -39,9 +37,19 @@ module EM_GNTP
                                 GNTP_ENCRYPTION_ID_KEY => 'NONE'
                                }
     
+    GNTP_APPLICATION_NAME_KEY = 'Application-Name'
+    GNTP_NOTIFICATION_COUNT_KEY = 'Notification-Count'
+    GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
+    GNTP_NOTIFICATION_ID_KEY  = 'Notification-ID'
+    GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY = 'Notification-Callback-Context'
+    GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY = 'Notification-Callback-Context-Type'
+    
+    
     GNTP_RESPONSE_METHOD_KEY = 'response_method'
+    GNTP_RESPONSE_ACTION_KEY = 'Response-Action'
     GNTP_ERROR_CODE_KEY = 'Error-Code'
     GNTP_NOTIFICATION_CALLBACK_RESULT_KEY = 'Notification-Callback-Result'
+    GNTP_NOTIFICATION_CALLBACK_TIMESTAMP_KEY = 'Notification-Callback-Timestamp'
     
     GNTP_OK_RESPONSE = '-OK'
     GNTP_ERROR_RESPONSE = '-ERROR'
@@ -291,6 +299,9 @@ module EM_GNTP
         mod.extend ClassMethods
       end
     
+      # write GNTP request string, print lines as \r\n
+      # assumes that including class delegates :[] to raw hash 
+      #   (described below under load).
       def dump
         #TODO
       end

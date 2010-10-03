@@ -42,7 +42,7 @@ module EM_GNTP
     def initialize(req)
       super
       @req = req
-      @req_action = req['environment']['request_action'] 
+      @req_action = req['environment']['request_method'] 
       cb_context = req['headers']['notification_callback_context']
       cb_context_type = req['headers']['notification_callback_context_type']
       cb_target = req['headers']['notification_callback_target']
@@ -80,9 +80,9 @@ module EM_GNTP
       @state = :init
     end
     
-    def update_state_from_response!(hash)
+    def update_state_from_response!(resp)
       @state = \
-        case hash['environment']['response_action']
+        case resp[0]
         when '-OK'
           :ok
         when '-ERROR'

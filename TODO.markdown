@@ -1,8 +1,7 @@
-## Oct 2
+## Oct 3
 
-2. Test harness for client (dummy server)
-3. Spec Marshal::Response.load
-4. Response
+1. Test harness for client (dummy server)
+2. Response
 
 
 ## This is what I see as the order of work
