@@ -101,8 +101,11 @@ module EM_GNTP
           end
         end
         
-        out << nil
-        out << nil
+        if out.last.nil?
+          2.times { out << nil }
+        else
+          3.times { out << nil }
+        end
         
         out.join("\r\n")
       end

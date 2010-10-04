@@ -54,8 +54,9 @@ module EM_GNTP
       
       def receive_data data
         @buffer.extract(data).each do |line|
+          #puts "#{line.inspect}"
           @lines << line
-          receive_message @lines.join("\r\n") if eof?
+          receive_message @lines.join("\r\n") + "\r\n" if eof?
         end
       end
       
@@ -68,7 +69,7 @@ module EM_GNTP
       end
       
       def eof?
-        @lines[-2,2] == ['', '']
+        @lines[-2..-1] == ['','']
       end
       
       def receive_message message
@@ -79,7 +80,7 @@ module EM_GNTP
         prepare_responses_for(raw)
         if @response
           send_data @response
-          puts "SERVER: Sent response:\n#{@response}"
+          puts "SERVER: Sent response"
         end
       end
       
@@ -120,6 +121,7 @@ module EM_GNTP
         end
         out << nil
         out << nil
+        out << nil
         puts "SERVER: Prepared REGISTER response: #{meth}, #{err}"
         @response = out.join("\r\n")
       end
@@ -139,13 +141,15 @@ module EM_GNTP
         end
         out << nil
         out << nil
+        out << nil
         puts "SERVER: Prepared NOTIFY response: #{meth}, #{err}"
         @response = out.join("\r\n")
       end
 
       def schedule_callback_response_for(req, rslt, secs)
         EM.add_timer(secs) do
-          send_data callback_response_for(req, rslt)
+          msg = callback_response_for(req, rslt)
+          send_data msg
           puts "SERVER: Sent CALLBACK response: #{rslt}"
         end
         puts "SERVER: Scheduled CALLBACK response in #{secs} secs: #{rslt}"
@@ -164,6 +168,7 @@ module EM_GNTP
         out << "#{GNTP_NOTIFICATION_CALLBACK_TIMESTAMP_KEY}: #{Time.now.strftime('%Y-%m-%d %H:%M:%SZ')}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]}"
+        out << nil
         out << nil
         out << nil
         out.join("\r\n")

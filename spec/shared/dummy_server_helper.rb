@@ -4,6 +4,7 @@ module DummyServerHelper
   def self.fork_server(opts = {})
     fork {
       puts '-------------- server process fork ------------------'
+      EM_GNTP::Dummy::Server.reset_canned_responses
       if opts[:register]
         EM_GNTP::Dummy::Server.respond_to_register_with *opts[:register]
       end

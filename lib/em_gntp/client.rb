@@ -60,7 +60,7 @@ module EM_GNTP
     def receive_data data
       @buffer.extract(data).each do |line|
         @lines << line
-        receive_message @lines.join("\r\n") if eof?
+        receive_message @lines.join("\r\n") + "\r\n" if eof?
       end
     end
 
@@ -74,12 +74,13 @@ module EM_GNTP
     end
     
     def eof?
-      @lines.last == ''
+      @lines[-2..-1] == ['','']
     end
     
     def receive_message(message)
       raw = response_class.load(message, nil)
       update_state_from_response!(raw)
+      puts "Client received message, state = #{@state}"
       resp = response_class.new(raw)
       case @state
       when :ok
@@ -89,6 +90,7 @@ module EM_GNTP
       when :error, :unknown
         @cb_each_errback.call(resp) if @cb_each_errback
       end
+      puts "Waiting for callback? #{waiting_for_callback? ? 'yes' : 'no'}"
       close_connection_after_writing unless waiting_for_callback?
     end
       
