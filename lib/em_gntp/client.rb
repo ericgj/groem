@@ -2,7 +2,8 @@ require 'eventmachine'
 
 module EM_GNTP
   class Client < EM::Connection
-  
+    include EM_GNTP::Constants
+    
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 23053
     
@@ -43,11 +44,11 @@ module EM_GNTP
     def initialize(req)
       super
       @req = req
-      @req_action = req['environment']['request_method'] 
-      cb_context = req['headers']['notification_callback_context']
-      cb_context_type = req['headers']['notification_callback_context_type']
-      cb_target = req['headers']['notification_callback_target']
-      @wait_for_callback = @req_action == 'NOTIFY' &&
+      @req_action = req[ENVIRONMENT_KEY][underscorize(GNTP_REQUEST_METHOD_KEY)] 
+      cb_context = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
+      cb_context_type = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
+      cb_target = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_TARGET_KEY)]
+      @wait_for_callback = @req_action == GNTP_NOTIFY_METHOD &&
                            cb_context && cb_context_type && !cb_target
     end
     
@@ -57,39 +58,51 @@ module EM_GNTP
     end
     
     def receive_data data
-      @buffer.extract(data).each do |message|
-        raw = response_class.load(message, nil)
-        update_state_from_response!(raw)
-        resp = response_class.new(raw)
-        case @state
-        when :ok
-          @cb_each_response.call(resp) if @cb_each_response
-        when :callback
-          @cb_each_callback.call(resp) if @cb_each_callback
-        when :error, :unknown
-          @cb_each_errback.call(resp) if @cb_each_errback
-        end
+      @buffer.extract(data).each do |line|
+        @lines << line
+        receive_message @lines.join("\r\n") if eof?
       end
-      close_connection_after_writing unless waiting_for_callback?
     end
 
 
     protected
 
     def reset_state
-      @buffer = BufferedTokenizer.new("\r\n\r\n\r\n")
+      @buffer = BufferedTokenizer.new("\r\n")
+      @lines = []
       @state = :init
     end
     
+    def eof?
+      @lines.last == ''
+    end
+    
+    def receive_message(message)
+      raw = response_class.load(message, nil)
+      update_state_from_response!(raw)
+      resp = response_class.new(raw)
+      case @state
+      when :ok
+        @cb_each_response.call(resp) if @cb_each_response
+      when :callback
+        @cb_each_callback.call(resp) if @cb_each_callback
+      when :error, :unknown
+        @cb_each_errback.call(resp) if @cb_each_errback
+      end
+      close_connection_after_writing unless waiting_for_callback?
+    end
+      
     def update_state_from_response!(resp)
       @state = \
-        case resp[0]
-        when '-OK'
-          :ok
-        when '-ERROR'
+        case resp[0].to_i
+        when 0
+          if resp[2]
+            :callback
+          else
+            :ok
+          end
+        when 100..500
           :error
-        when '-CALLBACK'
-          :callback
         else  
           :unknown
         end

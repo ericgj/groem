@@ -8,7 +8,7 @@ module EM_GNTP
       DEFAULT_HOST = 'localhost'
       DEFAULT_PORT = 23053
       
-      DEFAULT_RESPONSES = {  :register => ['-OK', 0],
+      DEFAULT_RESPONSES = { :register => ['-OK', 0],
                             :notify => ['-OK', 0],
                             :callback => ['CLICKED', 10]
                           }
@@ -36,7 +36,7 @@ module EM_GNTP
         
         def listen(host = DEFAULT_HOST, port = DEFAULT_PORT)
           svr = EM.start_server host, port, self
-          puts "Dummy GNTP server listening on #{host}:#{port}"
+          puts "SERVER: Dummy GNTP server listening on #{host}:#{port}"
           canned_responses.each_pair do |k, v|
             if k == :register || k == :notify
               puts "    #{k.to_s.upcase} responds #{v[0]} with status #{v[1]}"
@@ -55,7 +55,7 @@ module EM_GNTP
       def receive_data data
         @buffer.extract(data).each do |line|
           @lines << line
-          receive_message @lines.join("\r\n") if @lines[-2..-1] == ['','']
+          receive_message @lines.join("\r\n") if eof?
         end
       end
       
@@ -67,14 +67,19 @@ module EM_GNTP
         @response = nil
       end
       
+      def eof?
+        @lines[-2,2] == ['', '']
+      end
+      
       def receive_message message
-        puts "Received message:\n#{message}"
+        puts "SERVER: Received message"
         klass = Class.new { include EM_GNTP::Marshal::Request }
         raw = klass.load(message, false)
+        #puts "Parsed message:\n#{raw.inspect}"
         prepare_responses_for(raw)
         if @response
           send_data @response
-          puts "Sent response"
+          puts "SERVER: Sent response:\n#{@response}"
         end
       end
       
@@ -102,11 +107,12 @@ module EM_GNTP
       
       # eventually replace with Response#dump, quick & dirty for now
       def prepare_register_response_for(req, meth, err)
+        env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{req[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{req[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
                "#{meth} "+
-               "#{req[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
         out << "#{GNTP_RESPONSE_ACTION_KEY}: #{GNTP_REGISTER_METHOD}"
         if meth == GNTP_ERROR_RESPONSE
           out << "#{GNTP_ERROR_CODE_KEY}: #{err}"
@@ -114,48 +120,50 @@ module EM_GNTP
         end
         out << nil
         out << nil
-        puts "Prepared REGISTER response: #{meth}, #{err}"
+        puts "SERVER: Prepared REGISTER response: #{meth}, #{err}"
         @response = out.join("\r\n")
       end
 
       def prepare_notify_response_for(req, meth, err)
+        env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{req[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{req[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
                "#{meth} "+
-               "#{req[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
         out << "#{GNTP_RESPONSE_ACTION_KEY}: #{GNTP_NOTIFY_METHOD}"
-        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{req[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
         if meth == GNTP_ERROR_RESPONSE
           out << "#{GNTP_ERROR_CODE_KEY}: #{err}"
           out << "Error-Description: An error occurred"
         end
         out << nil
         out << nil
-        puts "Prepared NOTIFY response: #{meth}, #{err}"
+        puts "SERVER: Prepared NOTIFY response: #{meth}, #{err}"
         @response = out.join("\r\n")
       end
 
       def schedule_callback_response_for(req, rslt, secs)
         EM.add_timer(secs) do
           send_data callback_response_for(req, rslt)
-          puts "Sent CALLBACK response: #{rslt}"
+          puts "SERVER: Sent CALLBACK response: #{rslt}"
         end
-        puts "Scheduled CALLBACK response in #{secs} secs: #{rslt}"
+        puts "SERVER: Scheduled CALLBACK response in #{secs} secs: #{rslt}"
       end
       
       def callback_response_for(req, rslt)
+        env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{req[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{req[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
                "#{GNTP_CALLBACK_RESPONSE} "+
-               "#{req[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
-        out << "#{GNTP_APPLICATION_NAME_KEY}: #{req[underscorize(GNTP_APPLICATION_NAME_KEY)]}"
-        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{req[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
+               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+        out << "#{GNTP_APPLICATION_NAME_KEY}: #{hdrs[underscorize(GNTP_APPLICATION_NAME_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_RESULT_KEY}: #{rslt}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_TIMESTAMP_KEY}: #{Time.now.strftime('%Y-%m-%d %H:%M:%SZ')}"
-        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY}: #{req[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]}"
-        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY}: #{req[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]}"
         out << nil
         out << nil
         out.join("\r\n")

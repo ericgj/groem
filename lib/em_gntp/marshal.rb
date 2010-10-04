@@ -43,7 +43,7 @@ module EM_GNTP
     GNTP_NOTIFICATION_ID_KEY  = 'Notification-ID'
     GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY = 'Notification-Callback-Context'
     GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY = 'Notification-Callback-Context-Type'
-    
+    GNTP_NOTIFICATION_CALLBACK_TARGET_KEY = 'Notification-Callback-Target'
     
     GNTP_RESPONSE_METHOD_KEY = 'response_method'
     GNTP_RESPONSE_ACTION_KEY = 'Response-Action'

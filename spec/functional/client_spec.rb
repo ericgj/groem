@@ -5,16 +5,7 @@ describe 'EM_GNTP::Client' do
   describe 'REGISTER request, handle OK response' do
   
     before do
-      @p_svr = fork {
-        puts '-------------- forked server process ------------------'
-        EM_GNTP::Dummy::Server.respond_to_register_with '-OK'
-        EM.run {
-          Signal.trap("INT") { EM.next_tick { EM.stop } }
-          EM_GNTP::Dummy::Server.listen
-        }
-        puts '-------------- forked server process ending -----------'
-      }
-      #Process.detach(@p_svr)
+      @p_svr = DummyServerHelper.fork_server(:register => '-OK')
 
       @input_env = { 'protocol' => 'GNTP',
                      'version' => '1.0',
@@ -41,29 +32,60 @@ describe 'EM_GNTP::Client' do
     end
 
     after do
-      Process.kill("INT", @p_svr)
-      sleep 2
-      #system("ps -p #{@p_svr}")
+      DummyServerHelper.kill_server(@p_svr)
     end
     
     it 'should receive back one OK response' do
+      count = 0
       EM.run {
         puts "Client sending request:\n#{@input.dump}"
         connect = EM_GNTP::Client.register(@input)
         
-        connect.each_ok_response do |resp| 
-          @received = true
+        connect.each_ok_response do |resp|
+          puts "Client received OK response"
+          count += 1
           resp[0].to_i.must_equal 0
         end
         
-        EM.add_timer(3) { 
-          flunk 'Expected OK response, none received' unless @received
+        connect.each_error_response do |resp|
+          puts "Client received error response"
+          count += 1
+        end
+        
+        connect.each_callback_response do |resp|
+          puts "Client received callback response"
+          count += 1
+        end
+        
+        EM.add_timer(1) { 
+          flunk "Expected one response, #{count} received" unless count == 1
+          flunk 'Expected OK response, none received' unless count > 0
           EM.stop 
         }
       }
     end
         
     
+  end
+
+  describe 'REGISTER request, handle ERROR response' do
+
+  end
+  
+  describe 'NOTIFY request, no callback specified, handle OK response' do
+  
+  end
+  
+  describe 'NOTIFY request, no callback specified, handle ERROR response' do
+  
+  end
+  
+  describe 'NOTIFY request, callback specified, handle OK and CALLBACK response' do
+  
+  end
+  
+  describe 'NOTIFY request, callback specified, handle ERROR response' do
+  
   end
   
 end
