@@ -1,7 +1,8 @@
-## Oct 3
+## Oct 4
 
-1. Test harness for client (dummy server)
-2. Response
+1. Spec App class - #register and #notification
+2. Spec Request class that does data type conversions etc for App
+3. Spec App class simple callback handlers
 
 
 ## This is what I see as the order of work
