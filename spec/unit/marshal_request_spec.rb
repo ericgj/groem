@@ -249,24 +249,6 @@ end
 
 #---------- dump -----------#
   
-module MarshalRequestDumpHelper
-
-  def self.dummy_request(env = {}, hdrs = {}, notifs = {})
-    klass = Class.new { 
-              include(EM_GNTP::Marshal::Request) 
-              require 'forwardable'
-              extend Forwardable
-              def_delegators :@raw, :[], :[]=
-              def raw; @raw ||= {}; end
-              def initialize(input = {})
-                @raw = input
-              end
-            }
-    klass.new({'environment' => env, 'headers' => hdrs, 'notifications' => notifs})
-  end
-  
-end
-
 
 describe 'EM_GNTP::Marshal::Request#dump' do
   
@@ -289,7 +271,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
                         }
                       }
 
-      @subject = MarshalRequestDumpHelper.dummy_request(
+      @subject = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, @input_notifs).dump
     end
     
@@ -341,7 +323,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
                      'notification_sticky' => 'True',
                      'notification_icon' => 'http://www.whatever.com/poo.jpg'
                     }
-      @subject = MarshalRequestDumpHelper.dummy_request(
+      @subject = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, {}).dump
     end
     
@@ -373,7 +355,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
                      'notification_sticky' => 'True',
                      'notification_icon' => 'http://www.whatever.com/poo.jpg'
                     }
-      @subject = MarshalRequestDumpHelper.dummy_request(
+      @subject = MarshalHelper.dummy_request(
                    {}, @input_hdrs, {}).dump
     end
     

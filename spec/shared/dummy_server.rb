@@ -3,7 +3,7 @@ require 'eventmachine'
 module EM_GNTP
   module Dummy
     class Server < EM::Connection
-      include EM_GNTP::Marshal::Request
+      include EM_GNTP::Constants
       
       DEFAULT_HOST = 'localhost'
       DEFAULT_PORT = 23053
@@ -53,22 +53,29 @@ module EM_GNTP
       end
       
       def receive_data data
-        @buffer.extract(data).each do |message|
-          puts "Received message"
-          raw = load(message, nil)
-          prepare_responses_for(raw)
-          if @response
-            send_data @response
-            puts "Sent response"
-          end
+        @buffer.extract(data).each do |line|
+          @lines << line
+          receive_message @lines.join("\r\n") if @lines[-2..-1] == ['','']
         end
       end
       
       protected
       
       def reset_state
-        @buffer = BufferedTokenizer.new("\r\n\r\n")
+        @buffer = BufferedTokenizer.new("\r\n")
+        @lines = []
         @response = nil
+      end
+      
+      def receive_message message
+        puts "Received message:\n#{message}"
+        klass = Class.new { include EM_GNTP::Marshal::Request }
+        raw = klass.load(message, false)
+        prepare_responses_for(raw)
+        if @response
+          send_data @response
+          puts "Sent response"
+        end
       end
       
       def canned_responses; self.class.canned_responses; end

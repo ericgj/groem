@@ -226,7 +226,7 @@ module EM_GNTP
         end
         
         def parse_first_header(line, hash)
-          return hash unless line.size > 0
+          return hash unless line && line.size > 0
           tokens = line.split(' ')
           proto, vers = tokens[0].split('/')
           msgtype = tokens[1]
@@ -244,7 +244,7 @@ module EM_GNTP
         end
         
         def parse_header(line, hash)
-          return hash unless line.size > 0
+          return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           key = underscorize(key)
           hash[key] = val
@@ -252,13 +252,13 @@ module EM_GNTP
         end
         
         def parse_notification_name(line)
-          return nil unless line.size > 0
+          return nil unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           val if key.downcase == 'notification-name'      
         end
         
         def parse_notification_header(line, name, hash)
-          return hash unless line.size > 0
+          return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           key = underscorize(key)
           (hash[name] ||= {})[key] = val
@@ -266,13 +266,13 @@ module EM_GNTP
         end
         
         def parse_identifier(line)
-          return nil unless line.size > 0
+          return nil unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           val if key.downcase == 'identifier'
         end
         
         def parse_identifier_length(line)
-          return nil unless line.size > 0
+          return nil unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           val.to_i if key.downcase == 'length'
         end
@@ -367,7 +367,7 @@ module EM_GNTP
         end
         
         def parse_first_header(line, hash)
-          return hash unless line.size > 0
+          return hash unless line && line.size > 0
           tokens = line.split(' ')
           proto, vers = tokens[0].split('/')
           msgtype = tokens[1]
@@ -380,7 +380,7 @@ module EM_GNTP
         end
         
         def parse_header(line, hash)
-          return hash unless line.size > 0
+          return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
           key = underscorize(key)
           hash[key] = val

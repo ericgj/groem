@@ -4,3 +4,4 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup :default
 require 'lib/em_gntp/marshal'
+require 'lib/em_gntp/client'

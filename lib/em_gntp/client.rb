@@ -11,9 +11,10 @@ module EM_GNTP
         @response_class ||= EM_GNTP::Response
       end
       
-      def load_response_as(klass)
+      def response_class=(klass)
         @response_class = klass
       end
+      alias_method :load_response_as, :response_class=
       
       def request(request, host = DEFAULT_HOST, port = DEFAULT_PORT)
         connection = EM.connect host, port, self, request
@@ -76,7 +77,7 @@ module EM_GNTP
     protected
 
     def reset_state
-      @buffer = BufferedTokenizer.new("\r\n\r\n")
+      @buffer = BufferedTokenizer.new("\r\n\r\n\r\n")
       @state = :init
     end
     
