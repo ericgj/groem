@@ -3,7 +3,8 @@ require 'eventmachine'
 module EM_GNTP
   class Client < EM::Connection
     include EM_GNTP::Constants
-    
+    include EM::Deferrable
+
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 23053
     
@@ -64,7 +65,6 @@ module EM_GNTP
       end
     end
 
-
     protected
 
     def reset_state
@@ -85,10 +85,12 @@ module EM_GNTP
       case @state
       when :ok
         @cb_each_response.call(resp) if @cb_each_response
+        self.succeed(resp)
       when :callback
         @cb_each_callback.call(resp) if @cb_each_callback
       when :error, :unknown
         @cb_each_errback.call(resp) if @cb_each_errback
+        self.fail(resp)
       end
       puts "Waiting for callback? #{waiting_for_callback? ? 'yes' : 'no'}"
       close_connection_after_writing unless waiting_for_callback?
