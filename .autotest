@@ -1,0 +1,14 @@
+
+require 'autotest/restart'
+
+# Note only unit tests are autotest'ed here
+
+Autotest.add_hook :initialize do |at|
+  at.testlib = 'minitest/spec'
+  at.add_mapping(/^spec\/unit\/.*_spec\.rb$/) do |filename, _|
+    filename
+  end
+end
+
+
+
