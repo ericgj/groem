@@ -6,15 +6,19 @@ module EM_GNTP
                          :environment, :headers, :notifications)
     include EM_GNTP::Marshal::Request
     
+    DEFAULT_HOST = 'localhost'
+    DEFAULT_PORT = 23053
     DEFAULT_ENV = {'protocol' => 'GNTP', 'version' => '1.0',
                    'request_method' => 'REGISTER', 'encryption_id' => 'NONE'
                   }
                   
     def initialize(name, opts = {})
-      opts[:environment] = DEFAULT_ENV.merge(opts[:environment])
-      environment, headers, notifications = {}, {}, {}
-      headers['application_name'] = name
-      each do {|attr| self.__send__ :"#{attr}=", opts[attr.to_sym] }
+      self.environment, self.headers, self.notifications = {}, {}, {}
+      self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
+      self.host = opts.delete(:host) || DEFAULT_HOST
+      self.port = opts.delete(:port) || DEFAULT_PORT
+      self.headers['application_name'] = name
+      opts.each_pair {|opt, val| self.headers[opt.to_s] = val }
     end
     
     def [](key)
@@ -31,7 +35,7 @@ module EM_GNTP
     end
     
     def notify(name, title = nil, opts = {}, &blk)
-      n = notifications[name]
+      n = self.notifications[name]
       n.reset!    # forces new notification id
       n.title = title if title
       opts.each_pair {|k, v| n.__send__ :"#{k}=", v}
@@ -41,19 +45,20 @@ module EM_GNTP
     def notification(name, *args, &blk)
       n = EM_GNTP::Notification.new(name, *args)
       yield(n)
-      n.application_name = headers['application_name']
-      notifications[name] = n
-      n
+      n.application_name = self.headers['application_name']
+      self.notifications[name] = n
     end
    
     def icon(file_or_uri)
+      #TODO
     end
     
     def header(key, value)
-      headers[key] = value
+      self.headers[key] = value
     end
     
     def binary(key, value)
+      #TODO
     end
     
     
@@ -63,8 +68,8 @@ module EM_GNTP
         
     
     def to_request
-      {'environment' => environment, 
-       'headers' => headers, 
+      {'environment' => self.environment, 
+       'headers' => self.headers, 
        'notifications' => notifications_to_register
       }
     end
@@ -98,7 +103,7 @@ module EM_GNTP
     end
     
     def notifications_to_register
-      notifications.inject({}) do |memo, pair|
+      self.notifications.inject({}) do |memo, pair|
         memo[pair[0]] = pair[1].to_register
         memo
       end

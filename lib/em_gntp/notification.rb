@@ -22,11 +22,11 @@ module EM_GNTP
                    'request_method' => 'NOTIFY', 'encryption_id' => 'NONE'
                   }
     
-    def initialize(notif_name, notif_title = nil, opts = {})
-      environment, headers, @callback = {}, {}, {}
-      environment = DEFAULT_ENV.merge(opts.delete(:environment))
-      name = notif_name; title = notif_title
-      each {|attr| self.__send__ :"#{attr}=", opts[attr]}
+    def initialize(name, title = nil, opts = {})
+      self.environment, self.headers, @callback = {}, {}, {}
+      self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
+      self.name = name; self.title = title
+      opts.each_pair {|opt, val| self.__send__ :"#{opt}=", val}
       reset!
     end
     
@@ -46,20 +46,24 @@ module EM_GNTP
     def to_register
       @to_register ||= \
         %w{name display_name enabled icon}.inject({}) do |memo, attr|
-          memo["notification_#{attr}"] = self.__send__ :"#{attr}"
+          if val = self.__send__(:"#{attr}")
+            memo["notification_#{attr}"] = val
+          end
           memo
-        end.merge(headers)
+        end.merge(self.headers)
     end
     
     def to_notify
       @to_notify ||= \
         %w{name title text sticky priority coalescing_id}.inject({}) do |memo, attr|
-          memo["notification_#{attr}"] = self.__send__ :"#{attr}"
+          if val = self.__send__(:"#{attr}")
+            memo["notification_#{attr}"] = val
+          end
           memo
-        end.merge({'application_name' => application_name}).
+        end.merge({'application_name' => self.application_name}).
             merge({'notification_id' => unique_id}).
             merge(@callback).
-            merge(headers)
+            merge(self.headers)
     end
     
     def to_request
