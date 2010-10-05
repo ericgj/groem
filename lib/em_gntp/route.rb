@@ -4,10 +4,15 @@ module EM_GNTP
 
     class << self
       def parse action, path
+        parts = path.split('/')[0..2].map {|p| p == '*' ? nil : p}
+        [action] + Array.new(3).fill {|i| parts[i] }
       end
     
-      def matches? pattern, route
-        act, name, ctx, typ = route
+      def matches? pattern, parts
+        parts = [parts] unless Array === parts
+        pattern.zip(parts).all? do |exp, act|
+          exp.nil? || exp == act
+        end
       end
       
     end
@@ -19,11 +24,7 @@ module EM_GNTP
     def matches?(*args)
       self.class.matches?(@pattern, args)
     end
-    
-    # better for this work to be done by custom Response class...
-    def matches_response?(resp)
-    end
-    
+        
     def <=>(other)
     end
     

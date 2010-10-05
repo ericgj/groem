@@ -10,7 +10,7 @@ module EM_GNTP
     
     class << self
       def response_class
-        @response_class ||= EM_GNTP::Response
+        @response_class ||= anonymous_response_class 
       end
       
       def response_class=(klass)
@@ -24,6 +24,20 @@ module EM_GNTP
       end
       alias_method :register, :request
       alias_method :notify, :request
+      
+      def anonymous_response_class
+        @klass ||= \
+          Class.new { 
+            include(EM_GNTP::Marshal::Request) 
+            require 'forwardable'
+            extend Forwardable
+            def_delegators :@raw, :[], :[]=
+            def raw; @raw ||= {}; end
+            def initialize(input = {})
+              @raw = input
+            end
+          }
+      end
     end
       
     def response_class

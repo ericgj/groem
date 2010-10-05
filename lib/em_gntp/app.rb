@@ -81,15 +81,15 @@ module EM_GNTP
     end
     
     def when_clicked path=nil, &blk
-      when_notify GNTP_CLICKED_CALLBACK_ACTION, path, &blk
+      when_notify GNTP_CLICKED_CALLBACK_RESULT, path, &blk
     end
     
     def when_closed path=nil, &blk
-      when_notify GNTP_CLOSED_CALLBACK_ACTION, path, &blk
+      when_notify GNTP_CLOSED_CALLBACK_RESULT, path, &blk
     end
     
     def when_timeout path=nil, &blk
-      when_notify GNTP_TIMEOUT_CALLBACK_ACTION, path, &blk
+      when_notify GNTP_TIMEOUT_CALLBACK_RESULT, path, &blk
     end
     
     def when_notify action, path=nil, &blk
@@ -110,6 +110,7 @@ module EM_GNTP
     def register_errback; @register_errback || register_callback; end
     
     def send_register
+      EM_GNTP::Client.response_class = EM_GNTP::Response
       if EM.reactor_running?
         connect = EM_GNTP::Client.register(self, host, port)
         connect.callback &:register_callback if register_callback
@@ -130,6 +131,7 @@ module EM_GNTP
     end
     
     def send_notify(notif, &blk)
+      EM_GNTP::Client.response_class = EM_GNTP::Response
       if EM.reactor_running?
         connect = EM_GNTP::Client.notify(notif, host, port)
         connect.callback &blk
@@ -157,9 +159,9 @@ module EM_GNTP
     end
         
     def route_response(resp)
-      @notify_callbacks.sort {|a, b| a[0] <=> b[0]} do |pair|
-        if pair[0].matches_response?(resp)
-          pair[1].call(resp)
+      @notify_callbacks.sort {|a, b| a[0] <=> b[0]} do |route, blk|
+        if route.matches?(resp.callback_route)
+          blk.call(resp)
         end
       end
     end
