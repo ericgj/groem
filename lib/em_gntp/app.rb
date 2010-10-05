@@ -35,7 +35,7 @@ module EM_GNTP
     end
     
     def notify(name, title = nil, opts = {}, &blk)
-      n = self.notifications[name]
+      return unless n = self.notifications[name]
       n.reset!    # forces new notification id
       n.title = title if title
       opts.each_pair {|k, v| n.__send__ :"#{k}=", v}
@@ -84,19 +84,25 @@ module EM_GNTP
     
    protected
     
-    def register_callback; @register_callback || lambda {}; end
+    def register_callback; @register_callback; end
     def register_errback; @register_errback || register_callback; end
     
     def send_register
       if EM.reactor_running?
         connect = EM_GNTP::Client.register(self, host, port)
-        connect.callback &:register_callback
-        connect.errback &:register_errback
+        connect.callback &:register_callback if register_callback
+        connect.errback &:register_errback if register_errback
       else
         EM.run {
           connect = EM_GNTP::Client.register(self, host, port)
-          connect.callback { |resp| register_callback.call(resp); EM.stop }
-          connect.errback  { |resp| register_errback.call(resp); EM.stop }
+          connect.callback do |resp| 
+            register_callback.call(resp) if register_callback
+            EM.stop
+          end
+          connect.errback do |resp| 
+            register_errback.call(resp) if register_errback
+            EM.stop
+          end
         }
       end
     end
@@ -106,11 +112,17 @@ module EM_GNTP
         connect = EM_GNTP::Client.notify(notif, host, port)
         connect.callback &blk
         connect.errback &blk
+        connect.each_callback_response do |resp|
+          route_response(resp)
+        end
       else
         EM.run {
           connect = EM_GNTP::Client.notify(notif, host, port)
           connect.callback { |resp| blk.call(resp); EM.stop }
           connect.errback  { |resp| blk.call(resp); EM.stop }
+          connect.each_callback_response do |resp|
+            route_response(resp)
+          end
         }
       end
     end
@@ -122,6 +134,9 @@ module EM_GNTP
       end
     end
         
+    def route_response(resp)
+      #TODO
+    end
     
   end
   
