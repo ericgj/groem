@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__),'..','spec_helper')
 
 describe 'EM_GNTP::App #[]' do
 
-  describe 'when initializing' do
+  describe 'after initializing' do
     
     it 'should set the application_name header based on input' do
       @subject = EM_GNTP::App.new('thing')

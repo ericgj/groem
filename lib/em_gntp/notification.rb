@@ -22,7 +22,9 @@ module EM_GNTP
                    'request_method' => 'NOTIFY', 'encryption_id' => 'NONE'
                   }
     
-    def initialize(name, title = nil, opts = {})
+    def initialize(name, *args)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      title = args.shift
       self.environment, self.headers, @callback = {}, {}, {}
       self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
       self.name = name; self.title = title
@@ -79,8 +81,12 @@ module EM_GNTP
     
     def callback name = nil, opts = {}
       @callback['notification_callback_context'] = name
-      @callback['notification_callback_context_type'] = opts[:type]
-      @callback['notification_callback_target'] = opts[:target]
+      if opts[:type]
+        @callback['notification_callback_context_type'] = opts[:type]
+      end
+      if opts[:target]
+        @callback['notification_callback_target'] = opts[:target]
+      end
       @callback
     end
     
