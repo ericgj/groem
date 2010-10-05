@@ -28,6 +28,20 @@ module EM_GNTP
       def anonymous_response_class
         @klass ||= \
           Class.new { 
+            include(EM_GNTP::Marshal::Response) 
+            require 'forwardable'
+            extend Forwardable
+            def_delegators :@raw, :[], :[]=
+            def raw; @raw ||= {}; end
+            def initialize(input = {})
+              @raw = input
+            end
+          }
+      end
+      
+      def anonymous_request_class
+        @klass ||= \
+          Class.new { 
             include(EM_GNTP::Marshal::Request) 
             require 'forwardable'
             extend Forwardable
@@ -38,6 +52,7 @@ module EM_GNTP
             end
           }
       end
+      
     end
       
     def response_class

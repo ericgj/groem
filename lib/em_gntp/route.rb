@@ -17,15 +17,18 @@ module EM_GNTP
       
     end
     
+    attr_reader :pattern
+    
     def initialize action, path=nil
       @pattern = self.class.parse action, path
     end
       
     def matches?(*args)
-      self.class.matches?(@pattern, args)
+      self.class.matches?(pattern, args)
     end
         
     def <=>(other)
+      pattern <=> other.pattern
     end
     
   end

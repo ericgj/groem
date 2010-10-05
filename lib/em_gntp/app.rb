@@ -159,7 +159,7 @@ module EM_GNTP
     end
         
     def route_response(resp)
-      @notify_callbacks.sort {|a, b| a[0] <=> b[0]} do |route, blk|
+      @notify_callbacks.sort {|a, b| a[0] <=> b[0]}.each do |route, blk|
         if route.matches?(resp.callback_route)
           blk.call(resp)
         end

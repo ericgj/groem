@@ -38,7 +38,7 @@ module EM_GNTP
                                }
     
     GNTP_APPLICATION_NAME_KEY = 'Application-Name'
-    GNTP_NOTIFICATION_COUNT_KEY = 'Notification-Count'
+    GNTP_NOTIFICATION_COUNT_KEY = 'Notifications-Count'
     GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
     GNTP_NOTIFICATION_ID_KEY  = 'Notification-ID'
     GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY = 'Notification-Callback-Context'
@@ -106,9 +106,9 @@ module EM_GNTP
         end
         
         if out.last.nil?
-          2.times { out << nil }
+          1.times { out << nil }
         else
-          3.times { out << nil }
+          2.times { out << nil }
         end
         
         out.join("\r\n")
@@ -136,7 +136,7 @@ module EM_GNTP
         #
         # Syntactic validation may be implemented in the future.
         #
-        def load(input, klass = self.class)
+        def load(input, klass = self)
           env, hdrs, notifs = {}, {}, {}
           meth, notif_name, id, len, bin = nil
           section = :init
@@ -171,7 +171,7 @@ module EM_GNTP
                   HEADERS_KEY => hdrs, 
                   NOTIFICATIONS_KEY => notifs
                 }
-                
+               
           klass ? klass.new(out) : out
         end
         
