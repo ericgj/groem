@@ -21,6 +21,7 @@ module EM_GNTP
       opts.each_pair {|opt, val| self.headers[opt.to_s] = val }
     end
     
+    # used by Marshal::Request#dump
     def [](key)
       to_request[key]
     end
@@ -49,32 +50,53 @@ module EM_GNTP
       self.notifications[name] = n
     end
    
-    def icon(file_or_uri)
-      #TODO
+    def callbacks &blk
+      if blk.arity == 1
+        blk.call(self)
+      else
+        instance_eval(&blk)
+      end      
     end
-    
+        
     def header(key, value)
       self.headers[key] = value
     end
     
-    def binary(key, value)
+    def icon(file_or_uri)
       #TODO
     end
     
+    def binary(key, value_or_io)
+      #TODO
+    end
     
-    def when_register(&blk)
+    #---- callback definition methods
+    
+    def when_register &blk
       @register_callback = blk
     end
     
-    def when_register_failed(&blk)
+    def when_register_failed &blk 
       @register_errback = blk
     end
     
-    def callbacks
-      #TODO
+    def when_clicked path=nil, &blk
+      when_notify GNTP_CLICKED_CALLBACK_ACTION, path, &blk
     end
-        
     
+    def when_closed path=nil, &blk
+      when_notify GNTP_CLOSED_CALLBACK_ACTION, path, &blk
+    end
+    
+    def when_timeout path=nil, &blk
+      when_notify GNTP_TIMEOUT_CALLBACK_ACTION, path, &blk
+    end
+    
+    def when_notify action, path=nil, &blk
+      @notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
+    end
+    
+        
     def to_request
       {'environment' => self.environment, 
        'headers' => self.headers, 
@@ -135,7 +157,11 @@ module EM_GNTP
     end
         
     def route_response(resp)
-      #TODO
+      @notify_callbacks.sort {|a, b| a[0] <=> b[0]} do |pair|
+        if pair[0].matches_response?(resp)
+          pair[1].call(resp)
+        end
+      end
     end
     
   end
