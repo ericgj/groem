@@ -94,4 +94,15 @@ describe 'EM_GNTP::Notification #[]' do
 
   end
   
+  describe 'after reset!' do
+  
+    it 'should not set the same notification_id' do
+      @subject = EM_GNTP::Notification.new('verb')
+      id = @subject['headers']['notification_id']
+      @subject.reset!
+      @subject['headers']['notification_id'].wont_equal id
+    end
+    
+  end
+  
 end

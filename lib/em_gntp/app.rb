@@ -62,6 +62,14 @@ module EM_GNTP
     end
     
     
+    def when_register(&blk)
+      @register_callback = blk
+    end
+    
+    def when_register_failed(&blk)
+      @register_errback = blk
+    end
+    
     def callbacks
       #TODO
     end
@@ -76,14 +84,19 @@ module EM_GNTP
     
    protected
     
+    def register_callback; @register_callback || lambda {}; end
+    def register_errback; @register_errback || register_callback; end
+    
     def send_register
       if EM.reactor_running?
-        EM_GNTP::Client.register(self, host, port)
+        connect = EM_GNTP::Client.register(self, host, port)
+        connect.callback &:register_callback
+        connect.errback &:register_errback
       else
         EM.run {
           connect = EM_GNTP::Client.register(self, host, port)
-          connect.callback { |resp| EM.stop }
-          connect.errback  { |resp| EM.stop }
+          connect.callback { |resp| register_callback.call(resp); EM.stop }
+          connect.errback  { |resp| register_errback.call(resp); EM.stop }
         }
       end
     end
