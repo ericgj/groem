@@ -148,7 +148,7 @@ module EM_GNTP
           connect.errback  { |resp| blk.call(resp); EM.stop }
           connect.each_callback_response do |resp|
             route_response(resp)
-          end
+         end
         }
       end
     end

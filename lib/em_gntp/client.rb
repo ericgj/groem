@@ -115,9 +115,10 @@ module EM_GNTP
       case @state
       when :ok
         @cb_each_response.call(resp) if @cb_each_response
-        self.succeed(resp)
+        self.succeed(resp) unless waiting_for_callback?
       when :callback
         @cb_each_callback.call(resp) if @cb_each_callback
+        self.succeed(resp)
       when :error, :unknown
         @cb_each_errback.call(resp) if @cb_each_errback
         self.fail(resp)
