@@ -1,9 +1,10 @@
-## Oct 4
+## Oct 7
 
-1. Spec App class - #register and #notification
-2. Spec Request class that does data type conversions etc for App
-3. Spec App class simple callback handlers
-
+1. Spec Route
+2. Spec Response class
+3. Fix dummy_server for functional tests
+4. Add App functional tests for register, notify, and callbacks
+5. Add integration tests for App register, notify, and callbacks
 
 ## This is what I see as the order of work
 

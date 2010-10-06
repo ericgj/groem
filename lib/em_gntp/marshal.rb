@@ -10,14 +10,20 @@ module EM_GNTP
       end
     end
     
-    def underscorize(key)
-      key.to_s.downcase.tr('-','_')
+ #   def underscorize(key)
+ #     key.to_s.downcase.tr('-','_')
+ #   end
+ #   
+ #   def dasherize(key)
+ #     key.to_s.tr('_','-')
+ #   end
+
+    def growlify_key(str)
+      parts = str.to_s.tr('_','-').split('-')
+      parts.map {|p| p[0..0].upcase + p[1..-1]}.join('-')
     end
     
-    def dasherize(key)
-      key.to_s.tr('_','-')
-    end
-    
+     
     ENVIRONMENT_KEY = 'environment'
     HEADERS_KEY = 'headers'
     NOTIFICATIONS_KEY = 'notifications'

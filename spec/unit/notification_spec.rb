@@ -5,17 +5,17 @@ describe 'EM_GNTP::Notification #[]' do
   describe 'after initializing' do
     it 'should set the notification_name header based on input' do
       @subject = EM_GNTP::Notification.new('verb')
-      @subject['headers']['notification_name'].must_equal 'verb'
+      @subject['headers']['Notification-Name'].must_equal 'verb'
     end
  
     it 'should not set the notification_title header if none passed' do
       @subject = EM_GNTP::Notification.new('verb')
-      @subject['headers'].keys.wont_include 'notification_title'
+      @subject['headers'].keys.wont_include 'Notification-Title'
     end
   
     it 'should set the notification_title header based on input' do
       @subject = EM_GNTP::Notification.new('verb', 'title')
-      @subject['headers']['notification_title'].must_equal 'title'
+      @subject['headers']['Notification-Title'].must_equal 'title'
     end
     
     it 'should default the environment when no options passed' do
@@ -39,11 +39,11 @@ describe 'EM_GNTP::Notification #[]' do
                :sticky => 'True'
               }
       @subject = EM_GNTP::Notification.new('verb', opts)
-      @subject['headers']['notification_title'].must_equal 'what'
-      @subject['headers']['notification_text'].must_equal 'False'
-      @subject['headers']['notification_sticky'].must_equal 'True'
+      @subject['headers']['Notification-Title'].must_equal 'what'
+      @subject['headers']['Notification-Text'].must_equal 'False'
+      @subject['headers']['Notification-Sticky'].must_equal 'True'
       @subject['headers'].keys.wont_include 'environment'
-      @subject['headers'].keys.wont_include 'notification_environment'
+      @subject['headers'].keys.wont_include 'Notification-Environment'
     end
     
     it 'should set application_name option in headers hash' do
@@ -51,13 +51,22 @@ describe 'EM_GNTP::Notification #[]' do
                :application_name => 'Obama'
               }
       @subject = EM_GNTP::Notification.new('verb', opts)
-      @subject['headers']['application_name'].must_equal 'Obama'
-      @subject['headers'].keys.wont_include 'notification_application_name'
+      @subject['headers']['Application-Name'].must_equal 'Obama'
+      @subject['headers'].keys.wont_include 'Notification-Application-Name'
     end
     
     it 'should set automatic notification_id in headers hash' do
       @subject = EM_GNTP::Notification.new('verb')
-      @subject['headers'].keys.must_include 'notification_id'
+      @subject['headers'].keys.must_include 'Notification-ID'
+    end
+    
+    it 'should set any unknown options in headers hash not prefixed by \'notification_\'' do
+      opts = {:boo => 'bear', :sister_of_goldilocks => 'Reba'}
+      @subject = EM_GNTP::Notification.new('verb', opts)
+      @subject['headers']['Boo'].must_equal 'bear'
+      @subject['headers']['Sister-Of-Goldilocks'].must_equal 'Reba'
+      @subject['headers'].keys.wont_include 'Notification-Boo'
+      @subject['headers'].keys.wont_include 'Notification-Sister-Of-Goldilocks'
     end
     
   end
@@ -67,7 +76,7 @@ describe 'EM_GNTP::Notification #[]' do
     it 'should add the header to the headers hash based on input' do
       @subject = EM_GNTP::Notification.new('verb')
       @subject.header('x_header', 'boo')
-      @subject['headers']['x_header'].must_equal 'boo'
+      @subject['headers']['X-Header'].must_equal 'boo'
     end
   
   end
@@ -77,19 +86,19 @@ describe 'EM_GNTP::Notification #[]' do
     it 'should add the notification_callback_context header to the headers hash' do
       @subject = EM_GNTP::Notification.new('verb')
       @subject.callback 'success'
-      @subject['headers']['notification_callback_context'].must_equal 'success'
+      @subject['headers']['Notification-Callback-Context'].must_equal 'success'
     end
   
     it 'should add the notification_callback_context_type header to the headers hash, when :type passed as an option' do
       @subject = EM_GNTP::Notification.new('verb')
       @subject.callback 'success', :type => 'test'
-      @subject['headers']['notification_callback_context_type'].must_equal 'test'
+      @subject['headers']['Notification-Callback-Context-Type'].must_equal 'test'
     end
 
     it 'should add the notification_callback_target header to the headers hash, when :target passed as an option' do
       @subject = EM_GNTP::Notification.new('verb')
       @subject.callback 'success', :target => '10.10.0.2'
-      @subject['headers']['notification_callback_target'].must_equal '10.10.0.2'
+      @subject['headers']['Notification-Callback-Target'].must_equal '10.10.0.2'
     end
 
   end
@@ -98,9 +107,9 @@ describe 'EM_GNTP::Notification #[]' do
   
     it 'should not set the same notification_id' do
       @subject = EM_GNTP::Notification.new('verb')
-      id = @subject['headers']['notification_id']
+      id = @subject['headers']['Notification_ID']
       @subject.reset!
-      @subject['headers']['notification_id'].wont_equal id
+      @subject['headers']['Notification-ID'].wont_equal id
     end
     
   end

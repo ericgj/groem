@@ -17,8 +17,8 @@ module EM_GNTP
       self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
       self.host = opts.delete(:host) || DEFAULT_HOST
       self.port = opts.delete(:port) || DEFAULT_PORT
-      self.headers['application_name'] = name
-      opts.each_pair {|opt, val| self.headers[opt.to_s] = val }
+      self.headers[GNTP_APPLICATION_NAME_KEY] = name
+      opts.each_pair {|opt, val| self.headers[growlify_key(opt)] = val }
     end
     
     # used by Marshal::Request#dump
@@ -46,7 +46,7 @@ module EM_GNTP
     def notification(name, *args, &blk)
       n = EM_GNTP::Notification.new(name, *args)
       yield(n)
-      n.application_name = self.headers['application_name']
+      n.application_name = self.headers[GNTP_APPLICATION_NAME_KEY]
       self.notifications[name] = n
     end
    
@@ -59,7 +59,7 @@ module EM_GNTP
     end
         
     def header(key, value)
-      self.headers[key] = value
+      self.headers[growlify_key(key)] = value
     end
     
     def icon(file_or_uri)
@@ -105,7 +105,7 @@ module EM_GNTP
     end
     
    protected
-    
+        
     def register_callback; @register_callback; end
     def register_errback; @register_errback || register_callback; end
     
@@ -159,7 +159,7 @@ module EM_GNTP
     end
         
     def route_response(resp)
-      @notify_callbacks.sort {|a, b| a[0] <=> b[0]}.each do |route, blk|
+      @notify_callbacks.sort.each do |route, blk|
         if route.matches?(resp.callback_route)
           blk.call(resp)
         end

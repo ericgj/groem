@@ -27,8 +27,10 @@ module EM_GNTP
       self.class.matches?(pattern, args)
     end
         
+
+    # sort nil parts after named parts
     def <=>(other)
-      pattern <=> other.pattern
+      pattern.map {|it| it || '_'} <=> other.pattern.map {|it| it || '_'}
     end
     
   end

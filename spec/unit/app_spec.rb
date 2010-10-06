@@ -6,7 +6,7 @@ describe 'EM_GNTP::App #[]' do
     
     it 'should set the application_name header based on input' do
       @subject = EM_GNTP::App.new('thing')
-      @subject['headers']['application_name'].must_equal 'thing'
+      @subject['headers']['Application-Name'].must_equal 'thing'
     end
     
     it 'should default the environment when no options passed' do
@@ -33,10 +33,10 @@ describe 'EM_GNTP::App #[]' do
               }
       @subject = EM_GNTP::App.new('thing', opts)
       @subject['headers'].must_equal(
-        {'application_name' => 'thing',
-         'x_option_1' => '1',
-         'x_option_2' => '2',
-         'x_option_3' => '3'
+        {'Application-Name' => 'thing',
+         'X-Option-1' => '1',
+         'X-Option-2' => '2',
+         'X-Option-3' => '3'
         }
       )
     end
@@ -53,7 +53,7 @@ describe 'EM_GNTP::App #[]' do
     it 'should add the header to the headers hash based on input' do
       @subject = EM_GNTP::App.new('thing')
       @subject.header('x_header', 'boo')
-      @subject['headers']['x_header'].must_equal 'boo'
+      @subject['headers']['X-Header'].must_equal 'boo'
     end
   
   end
@@ -65,7 +65,7 @@ describe 'EM_GNTP::App #[]' do
       @subject = EM_GNTP::App.new('thing')
       @subject.notification 'action' do end
       @subject['notifications'].must_equal(
-        {'action' => {'notification_name' => 'action'} }
+        {'action' => {'Notification-Name' => 'action'} }
       )
     end
         
