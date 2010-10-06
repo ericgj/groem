@@ -59,7 +59,7 @@ module EM_GNTP
  
     GNTP_CLICKED_CALLBACK_RESULT = 'CLICKED'
     GNTP_CLOSED_CALLBACK_RESULT = 'CLOSED'
-    GNTP_CLOSED_CALLBACK_RESULT = 'TIMEOUT'
+    GNTP_TIMEOUT_CALLBACK_RESULT = 'TIMEOUT'
     
   end
   
@@ -81,24 +81,24 @@ module EM_GNTP
         hdrs = self[HEADERS_KEY]
         notifs = self[NOTIFICATIONS_KEY]
         
-        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
-               "#{env[underscorize(GNTP_REQUEST_METHOD_KEY)]} "+
-               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+        out << "#{env[(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[(GNTP_VERSION_KEY)]} "+
+               "#{env[(GNTP_REQUEST_METHOD_KEY)]} "+
+               "#{env[(GNTP_ENCRYPTION_ID_KEY)]}"
         hdrs.each_pair do |k, v|
           unless v.nil?
-            out << "#{dasherize(k)}: #{v}"
+            out << "#{(k)}: #{v}"
           end
         end
         
-        if env[underscorize(GNTP_REQUEST_METHOD_KEY)] == GNTP_REGISTER_METHOD
+        if env[(GNTP_REQUEST_METHOD_KEY)] == GNTP_REGISTER_METHOD
           out << "#{GNTP_NOTIFICATION_COUNT_KEY}: #{notifs.keys.count}"
           out << nil
           notifs.each_pair do |name, pairs|
             out << "#{GNTP_NOTIFICATION_NAME_KEY}: #{name}"
             pairs.each do |pair|
               unless pair[1].nil?
-                out << "#{dasherize(pair[0])}: #{pair[1]}"
+                out << "#{(pair[0])}: #{pair[1]}"
               end
             end
             out << nil
@@ -146,7 +146,7 @@ module EM_GNTP
             case section
             when :first
               parse_first_header(line, env)
-              meth = env[underscorize(GNTP_REQUEST_METHOD_KEY)]
+              meth = env[(GNTP_REQUEST_METHOD_KEY)]
             when :headers
               parse_header(line, hdrs)
             when :notification_start
@@ -192,7 +192,7 @@ module EM_GNTP
             new_state = if line =~ /^\w*identifier\w*:/i
                           :identifier_start 
                         elsif method == GNTP_REGISTER_METHOD && \
-                              line =~ /^\w*notification-name\w*:/i
+                              line =~ /^\s*#{GNTP_NOTIFICATION_NAME_KEY}\s*:/i
                           :notification_start
                         else
                           :headers
@@ -202,31 +202,31 @@ module EM_GNTP
             new_state = :notification
           when :notification
             line = scanner.scan(/.*\n/)
-            new_state = if line =~ /^\w*identifier\w*:/i
+            new_state = if line =~ /^\s*identifier\s*:/i
                           :identifier_start 
                         elsif method == GNTP_REGISTER_METHOD && \
-                              line =~ /^\w*notification-name\w*:/i
+                              line =~ /^\s*#{GNTP_NOTIFICATION_NAME_KEY}\s*:/i
                           :notification_start
                         else
                           :notification
                         end
           when :identifier_start
             line = scanner.scan(/.*\n/)
-            new_state = :identifier_length if line =~ /^\w*length\w*:/i
+            new_state = :identifier_length if line =~ /^\s*length\s*:/i
           when :identifier_length
             new_state = :binary
           when :binary
             line = scanner.scan(/.*\n/)
-            new_state = if line =~ /^\w*identifier\w*:/i
+            new_state = if line =~ /^\s*identifier\s*:/i
                           :identifier_start 
                         elsif method == GNTP_REGISTER_METHOD && \
-                              line =~ /^\w*notification-name\w*:/i
+                              line =~ /^\s*#{GNTP_NOTIFICATION_NAME_KEY}\s*:/i
                           :notification_start
                         else
                           :headers
                         end
           end
-          #puts "state #{state} --> #{new_state}"
+          puts "state #{state} --> #{new_state}"
           state = new_state
           line = line.chomp if line
           [line, state]
@@ -242,10 +242,10 @@ module EM_GNTP
           keyhash, salt = if tokens[3] && tokens[3].split(':')[1]
                             tokens[3].split(':')[1].split('.')
                           end
-          hash[underscorize(GNTP_PROTOCOL_KEY)] = proto
-          hash[underscorize(GNTP_VERSION_KEY)] = vers
-          hash[underscorize(GNTP_REQUEST_METHOD_KEY)] = msgtype
-          hash[underscorize(GNTP_ENCRYPTION_ID_KEY)] = encrypid
+          hash[(GNTP_PROTOCOL_KEY)] = proto
+          hash[(GNTP_VERSION_KEY)] = vers
+          hash[(GNTP_REQUEST_METHOD_KEY)] = msgtype
+          hash[(GNTP_ENCRYPTION_ID_KEY)] = encrypid
           # TODO the rest
           hash
         end
@@ -253,7 +253,7 @@ module EM_GNTP
         def parse_header(line, hash)
           return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          key = underscorize(key)
+          key = (key)
           hash[key] = val
           hash
         end
@@ -261,13 +261,13 @@ module EM_GNTP
         def parse_notification_name(line)
           return nil unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          val if key.downcase == 'notification-name'      
+          val if key.downcase == GNTP_NOTIFICATION_NAME_KEY.downcase      
         end
         
         def parse_notification_header(line, name, hash)
           return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          key = underscorize(key)
+          key = (key)
           (hash[name] ||= {})[key] = val
           hash      
         end
@@ -323,7 +323,7 @@ module EM_GNTP
         #
         # Note this is explicitly modeled after Rack's interface
         #
-        def load(input, klass = self.class)
+        def load(input, klass = self)
           env, hdrs = {}, {}
           status, meth, cb_rslt = nil
           section = :init
@@ -339,11 +339,11 @@ module EM_GNTP
           end
           
           # pull out status and callback result
-          status = hdrs.delete(underscorize(GNTP_ERROR_CODE_KEY))
-          cb_rslt = hdrs.delete(underscorize(GNTP_NOTIFICATION_CALLBACK_RESULT_KEY))
+          status = hdrs.delete((GNTP_ERROR_CODE_KEY))
+          cb_rslt = hdrs.delete((GNTP_NOTIFICATION_CALLBACK_RESULT_KEY))
           
           # set status OK unless already set by error code and unless -ERROR response
-          meth = env[underscorize(GNTP_RESPONSE_METHOD_KEY)]
+          meth = env[(GNTP_RESPONSE_METHOD_KEY)]
           status ||= GNTP_ERROR_CODE_OK unless meth == GNTP_ERROR_RESPONSE
           
           out = [ status, hdrs, cb_rslt ]
@@ -379,17 +379,17 @@ module EM_GNTP
           proto, vers = tokens[0].split('/')
           msgtype = tokens[1]
           encrypid = tokens[2]
-          hash[underscorize(GNTP_PROTOCOL_KEY)] = proto
-          hash[underscorize(GNTP_VERSION_KEY)] = vers
-          hash[underscorize(GNTP_RESPONSE_METHOD_KEY)] = msgtype
-          hash[underscorize(GNTP_ENCRYPTION_ID_KEY)] = encrypid
+          hash[(GNTP_PROTOCOL_KEY)] = proto
+          hash[(GNTP_VERSION_KEY)] = vers
+          hash[(GNTP_RESPONSE_METHOD_KEY)] = msgtype
+          hash[(GNTP_ENCRYPTION_ID_KEY)] = encrypid
           hash
         end
         
         def parse_header(line, hash)
           return hash unless line && line.size > 0
           key, val = line.split(':', 2).map {|t| t.strip }
-          key = underscorize(key)
+          key = (key)
           hash[key] = val
           hash
         end        

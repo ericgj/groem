@@ -26,7 +26,7 @@ module EM_GNTP
       alias_method :notify, :request
       
       def anonymous_response_class
-        @klass ||= \
+        @klass_resp ||= \
           Class.new { 
             include(EM_GNTP::Marshal::Response) 
             require 'forwardable'
@@ -40,7 +40,7 @@ module EM_GNTP
       end
       
       def anonymous_request_class
-        @klass ||= \
+        @klass_req ||= \
           Class.new { 
             include(EM_GNTP::Marshal::Request) 
             require 'forwardable'
@@ -74,10 +74,10 @@ module EM_GNTP
     def initialize(req)
       super
       @req = req
-      @req_action = req[ENVIRONMENT_KEY][underscorize(GNTP_REQUEST_METHOD_KEY)] 
-      cb_context = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
-      cb_context_type = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
-      cb_target = req[HEADERS_KEY][underscorize(GNTP_NOTIFICATION_CALLBACK_TARGET_KEY)]
+      @req_action = req[ENVIRONMENT_KEY][(GNTP_REQUEST_METHOD_KEY)] 
+      cb_context = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
+      cb_context_type = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
+      cb_target = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_TARGET_KEY)]
       @wait_for_callback = @req_action == GNTP_NOTIFY_METHOD &&
                            cb_context && cb_context_type && !cb_target
     end
@@ -89,9 +89,10 @@ module EM_GNTP
     
     def receive_data data
       @buffer.extract(data).each do |line|
+        #print "#{line.inspect}"
         @lines << line
-        receive_message @lines.join("\r\n") + "\r\n" if eof?
       end
+      receive_message @lines.join("\r\n") + "\r\n" if eof?
     end
 
     protected
@@ -103,7 +104,7 @@ module EM_GNTP
     end
     
     def eof?
-      @lines[-2..-1] == ['','']
+      @lines[-1] == ''
     end
     
     def receive_message(message)

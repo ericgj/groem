@@ -26,10 +26,10 @@ module EM_GNTP
                     else
                       GNTP_ERROR_RESPONSE
                     end
-      self.action = resp[1][(underscorize(GNTP_RESPONSE_ACTION_KEY)]
-      self.notification_name = resp[1][underscorize(GNTP_NOTIFICATION_NAME_KEY)]
-      self.context = resp[1][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
-      self.context_type = resp[1][underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
+      self.action = resp[1][(GNTP_RESPONSE_ACTION_KEY)]
+      self.notification_name = resp[1][(GNTP_NOTIFICATION_NAME_KEY)]
+      self.context = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
+      self.context_type = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
       self.headers = resp[1]
       self.callback_result = resp[2]
     end

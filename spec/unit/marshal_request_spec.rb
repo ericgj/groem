@@ -62,23 +62,23 @@ __________
     end
     
     it '\'Download Complete\' notification should have notification_display_name == \'Download completed\'' do
-      @subject['notifications']['Download Complete']['notification_display_name'].must_equal 'Download completed'
+      @subject['notifications']['Download Complete']['Notification-Display-Name'].must_equal 'Download completed'
     end
     
     it '\'Download Complete\' notification should have notification_enabled == \'True\'' do
-      @subject['notifications']['Download Complete']['notification_enabled'].must_equal 'True'
+      @subject['notifications']['Download Complete']['Notification-Enabled'].must_equal 'True'
     end
     
     it '\'Download Complete\' notification should have x_timezone == \'PST\'' do
-      @subject['notifications']['Download Complete']['x_timezone'].must_equal 'PST'
+      @subject['notifications']['Download Complete']['X_Timezone'].must_equal 'PST'
     end
     
     it '\'Download Complete\' notification should have x_language == \'English\'' do
-      @subject['notifications']['Download Complete']['x_language'].must_equal 'English'
+      @subject['notifications']['Download Complete']['X_Language'].must_equal 'English'
     end
     
     it 'headers hash should not have x_timezone key' do
-      @subject['headers'].has_key?('x_timezone').must_equal false
+      @subject['headers'].has_key?('X_Timezone').must_equal false
     end
     
   end
@@ -138,23 +138,23 @@ __________
     end
 
     it '\'Download Complete\' notification should have notification_display_name == \'Download completed\'' do
-      @subject['notifications']['Download Complete']['notification_display_name'].must_equal 'Download completed'
+      @subject['notifications']['Download Complete']['Notification-Display-Name'].must_equal 'Download completed'
     end
 
     it '\'Download Started\' notification should have notification_enabled == \'False\'' do
-      @subject['notifications']['Download Started']['notification_enabled'].must_equal 'False'
+      @subject['notifications']['Download Started']['Notification-Enabled'].must_equal 'False'
     end    
     
     it '\'Download Error\' notification should have x_language == \'Spanish\'' do
-      @subject['notifications']['Download Error']['x_language'].must_equal 'Spanish'
+      @subject['notifications']['Download Error']['X-Language'].must_equal 'Spanish'
     end    
 
-    it '\'Download Started\' notification should not have x_language key' do
-      @subject['notifications']['Download Started'].has_key?('x_language').must_equal false
+    it '\'Download Started\' notification should not have X-Language key' do
+      @subject['notifications']['Download Started'].has_key?('X-Language').must_equal false
     end    
     
-    it '\'Download Error\' notification should not have x_timezone key' do
-      @subject['notifications']['Download Error'].has_key?('x_timezone').must_equal false
+    it '\'Download Error\' notification should not have X-Timezone key' do
+      @subject['notifications']['Download Error'].has_key?('X-Timezone').must_equal false
     end    
     
   end
@@ -210,19 +210,19 @@ __________
     end
     
     it 'headers hash should have application_name == SurfWriter' do
-      @subject['headers']['application_name'].must_equal 'SurfWriter'
+      @subject['headers']['Application-Name'].must_equal 'SurfWriter'
     end
     
     it 'headers hash should have notification_title == \'XYZ finished downloading\'' do
-      @subject['headers']['notification_title'].must_equal 'XYZ finished downloading'
+      @subject['headers']['Notification-Title'].must_equal 'XYZ finished downloading'
     end
 
     it 'headers hash should have notification_sticky == \'True\'' do
-      @subject['headers']['notification_sticky'].must_equal 'True'
+      @subject['headers']['Notification-Sticky'].must_equal 'True'
     end
     
     it 'headers hash should have notification_icon == \'http://www.whatever.com/poo.jpg\'' do
-      @subject['headers']['notification_icon'].must_equal 'http://www.whatever.com/poo.jpg'
+      @subject['headers']['Notification-Icon'].must_equal 'http://www.whatever.com/poo.jpg'
     end
     
     it 'notifications hash should be empty' do
@@ -260,14 +260,14 @@ describe 'EM_GNTP::Marshal::Request#dump' do
                      'request_method' => 'REGISTER',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'application_icon' => 'http://www.site.org/image.jpg'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Application-Icon' => 'http://www.site.org/image.jpg'
                     }
       @input_notifs = { 'Download Complete' => {
-                            'notification_display_name' => 'Download completed',
-                            'notification_enabled' => 'True',
-                            'x_language' => 'English',
-                            'x_timezone' => 'PST'
+                            'Notification-Display-Name' => 'Download completed',
+                            'Notification-Enabled' => 'True',
+                            'X-Language' => 'English',
+                            'X-Timezone' => 'PST'
                         }
                       }
 
@@ -297,12 +297,12 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     end
     
     it 'should output the notification count == count of input notifications' do
-      @subject.must_match(/^\s*notification-count\s*:\s*#{@input_notifs.keys.count}\s*$/i)
+      @subject.must_match(/^\s*Notifications-Count\s*:\s*#{@input_notifs.keys.count}\s*$/i)
     end
     
     it 'should have a notification-name line for each input notification' do
       @input_notifs.each_pair do |name, pairs|
-        @subject.must_match(/^\s*notification-name\s*:\s*#{name}\s*$/i)
+        @subject.must_match(/^\s*Notification-Name\s*:\s*#{name}\s*$/i)
       end
     end
     
@@ -316,12 +316,12 @@ describe 'EM_GNTP::Marshal::Request#dump' do
                      'request_method' => 'NOTIFY',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'notification_name'=> 'Download Complete',
-                     'notification_id' => '999',
-                     'notification_title' => 'XYZ finished downloading',
-                     'notification_sticky' => 'True',
-                     'notification_icon' => 'http://www.whatever.com/poo.jpg'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Notification-Name'=> 'Download Complete',
+                     'Notification-Id' => '999',
+                     'Notification-Title' => 'XYZ finished downloading',
+                     'Notification-Sticky' => 'True',
+                     'Notification-Icon' => 'http://www.whatever.com/poo.jpg'
                     }
       @subject = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, {}).dump
@@ -340,7 +340,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     end
     
     it 'should not output a notification-count line' do
-      @subject.wont_match(/^\s*notification-count\s*:\s*\d+\s*$/i)
+      @subject.wont_match(/^\s*Notifications-Count\s*:\s*\d+\s*$/i)
     end
       
   end
@@ -348,12 +348,12 @@ describe 'EM_GNTP::Marshal::Request#dump' do
   describe 'when no environment' do
   
     before do
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'notification_name'=> 'Download Complete',
-                     'notification_id' => '999',
-                     'notification_title' => 'XYZ finished downloading',
-                     'notification_sticky' => 'True',
-                     'notification_icon' => 'http://www.whatever.com/poo.jpg'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Notification-Name'=> 'Download Complete',
+                     'Notification-ID' => '999',
+                     'Notification-Title' => 'XYZ finished downloading',
+                     'Notification-Sticky' => 'True',
+                     'Notification-Icon' => 'http://www.whatever.com/poo.jpg'
                     }
       @subject = MarshalHelper.dummy_request(
                    {}, @input_hdrs, {}).dump
@@ -372,7 +372,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     end
     
     it 'should not output a notification-count line' do
-      @subject.wont_match(/^\s*notification-count\s*:\s*\d+\s*$/i)
+      @subject.wont_match(/^\s*Notifications-Count\s*:\s*\d+\s*$/i)
     end
     
   end
