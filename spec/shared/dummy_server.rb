@@ -10,7 +10,7 @@ module EM_GNTP
       
       DEFAULT_RESPONSES = { :register => ['-OK', 0],
                             :notify => ['-OK', 0],
-                            :callback => ['CLICKED', 10]
+                            :callback => ['CLICK', 10]
                           }
       
       class << self

@@ -25,7 +25,7 @@ module EM_GNTP
     end
       
     def matches?(*args)
-      self.class.matches?(pattern, args)
+      self.class.matches?(pattern, args.flatten)
     end
         
 

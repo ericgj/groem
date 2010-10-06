@@ -80,20 +80,20 @@ module EM_GNTP
       @register_errback = blk
     end
     
-    def when_clicked path=nil, &blk
+    def when_click path=nil, &blk
       when_notify GNTP_CLICK_CALLBACK_RESULT, path, &blk
     end
     
-    def when_closed path=nil, &blk
+    def when_close path=nil, &blk
       when_notify GNTP_CLOSE_CALLBACK_RESULT, path, &blk
     end
     
-    def when_timeout path=nil, &blk
+    def when_timedout path=nil, &blk
       when_notify GNTP_TIMEDOUT_CALLBACK_RESULT, path, &blk
     end
     
-    def when_notify action, path=nil, &blk
-      @notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
+    def when_callback action, path=nil, &blk
+      notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
     end
     
         
@@ -108,7 +108,9 @@ module EM_GNTP
         
     def register_callback; @register_callback; end
     def register_errback; @register_errback || register_callback; end
-    
+
+    def notify_callbacks; @notify_callbacks ||= {}; end
+
     def send_register
       EM_GNTP::Client.response_class = EM_GNTP::Response
       if EM.reactor_running?
@@ -159,7 +161,9 @@ module EM_GNTP
     end
         
     def route_response(resp)
-      @notify_callbacks.sort.each do |route, blk|
+      #puts "Response callback route: #{resp.callback_route.inspect}"
+      notify_callbacks.sort.each do |route, blk|
+        #puts "Checking against pattern: #{route.pattern.inspect} => #{route.matches?(resp.callback_route).inspect}"
         if route.matches?(resp.callback_route)
           blk.call(resp)
         end
