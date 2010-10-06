@@ -1,6 +1,8 @@
 
 module DummyServerHelper
-
+  
+  DEFAULT_PORT = EM_GNTP::Dummy::Server::DEFAULT_PORT
+  
   def self.fork_server(opts = {})
     fork {
       puts '-------------- server process fork ------------------'

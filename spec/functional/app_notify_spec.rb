@@ -7,7 +7,7 @@ describe 'EM_GNTP::App #notify' do
     before do
       @p_svr = DummyServerHelper.fork_server(:notify => '-OK')
       EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test')
+      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -39,7 +39,7 @@ describe 'EM_GNTP::App #notify' do
     before do
       @p_svr = DummyServerHelper.fork_server(:notify => '-OK')
       EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test')
+      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do

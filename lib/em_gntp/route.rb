@@ -4,6 +4,7 @@ module EM_GNTP
 
     class << self
       def parse action, path
+        path ||= ''
         parts = path.split('/')[0..2].map {|p| p == '*' ? nil : p}
         [action] + Array.new(3).fill {|i| parts[i] }
       end
@@ -28,9 +29,9 @@ module EM_GNTP
     end
         
 
-    # sort nil parts after named parts
+    # sort nil parts after named parts (unless named parts begin with ~)
     def <=>(other)
-      pattern.map {|it| it || '_'} <=> other.pattern.map {|it| it || '_'}
+      pattern.map {|it| it || '~'} <=> other.pattern.map {|it| it || '~'}
     end
     
   end

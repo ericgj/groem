@@ -6,7 +6,7 @@ module EM_GNTP
       include EM_GNTP::Constants
       
       DEFAULT_HOST = 'localhost'
-      DEFAULT_PORT = 23053
+      DEFAULT_PORT = 23052    # note one off to avoid port conflict
       
       DEFAULT_RESPONSES = { :register => ['-OK', 0],
                             :notify => ['-OK', 0],
@@ -54,10 +54,10 @@ module EM_GNTP
       
       def receive_data data
         @buffer.extract(data).each do |line|
-          #puts "#{line.inspect}"
+          update_message_state!(line)
           @lines << line
-          receive_message @lines.join("\r\n") + "\r\n" if eof?
         end
+        receive_message @lines.join("\r\n") + "\r\n" if eof?
       end
       
       protected
@@ -66,10 +66,29 @@ module EM_GNTP
         @buffer = BufferedTokenizer.new("\r\n")
         @lines = []
         @response = nil
+        @sections_left = 0
+      end
+      
+      # Horribly kludgy but that's GNTP for you...
+      def update_message_state!(line)
+        if line[/^\s*Notifications-Count\s*:\s*(\d+)/i]
+          @sections_left += $1.to_i
+        end
+        if line[/^.+:\s*x-growl-resource:/i]
+          @sections_left += 1
+        end
+        if line.empty?
+          @sections_left -= 1
+        end
+        #puts line
+        #puts "Note: #{@sections_left} more sections"
       end
       
       def eof?
-        @lines[-2..-1] == ['','']
+        if @lines[-1].empty? && @sections_left > 0
+          puts "SERVER: CRLFCRLF received, but expecting #{@sections_left} more sections"
+        end
+        @lines[-1].empty? && @sections_left <= 0
       end
       
       def receive_message message
@@ -102,7 +121,7 @@ module EM_GNTP
                                         canned_responses[:callback][0],
                                         canned_responses[:callback][1]
                                        ) \
-            if req['headers']['notification_callback_context']
+            if req['headers']['Notification-Callback-Context']
         end
       end
       
@@ -110,10 +129,10 @@ module EM_GNTP
       def prepare_register_response_for(req, meth, err)
         env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[(GNTP_VERSION_KEY)]} "+
                "#{meth} "+
-               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+               "#{env[(GNTP_ENCRYPTION_ID_KEY)]}"
         out << "#{GNTP_RESPONSE_ACTION_KEY}: #{GNTP_REGISTER_METHOD}"
         if meth == GNTP_ERROR_RESPONSE
           out << "#{GNTP_ERROR_CODE_KEY}: #{err}"
@@ -129,12 +148,12 @@ module EM_GNTP
       def prepare_notify_response_for(req, meth, err)
         env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[(GNTP_VERSION_KEY)]} "+
                "#{meth} "+
-               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
+               "#{env[(GNTP_ENCRYPTION_ID_KEY)]}"
         out << "#{GNTP_RESPONSE_ACTION_KEY}: #{GNTP_NOTIFY_METHOD}"
-        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[(GNTP_NOTIFICATION_ID_KEY)]}"
         if meth == GNTP_ERROR_RESPONSE
           out << "#{GNTP_ERROR_CODE_KEY}: #{err}"
           out << "Error-Description: An error occurred"
@@ -158,16 +177,16 @@ module EM_GNTP
       def callback_response_for(req, rslt)
         env, hdrs = req[ENVIRONMENT_KEY], req[HEADERS_KEY]
         out = []
-        out << "#{env[underscorize(GNTP_PROTOCOL_KEY)]}" + 
-               "/#{env[underscorize(GNTP_VERSION_KEY)]} "+
+        out << "#{env[(GNTP_PROTOCOL_KEY)]}" + 
+               "/#{env[(GNTP_VERSION_KEY)]} "+
                "#{GNTP_CALLBACK_RESPONSE} "+
-               "#{env[underscorize(GNTP_ENCRYPTION_ID_KEY)]}"
-        out << "#{GNTP_APPLICATION_NAME_KEY}: #{hdrs[underscorize(GNTP_APPLICATION_NAME_KEY)]}"
-        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_ID_KEY)]}"
+               "#{env[(GNTP_ENCRYPTION_ID_KEY)]}"
+        out << "#{GNTP_APPLICATION_NAME_KEY}: #{hdrs[(GNTP_APPLICATION_NAME_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_ID_KEY}: #{hdrs[(GNTP_NOTIFICATION_ID_KEY)]}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_RESULT_KEY}: #{rslt}"
         out << "#{GNTP_NOTIFICATION_CALLBACK_TIMESTAMP_KEY}: #{Time.now.strftime('%Y-%m-%d %H:%M:%SZ')}"
-        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]}"
-        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY}: #{hdrs[underscorize(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY}: #{hdrs[(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]}"
+        out << "#{GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY}: #{hdrs[(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]}"
         out << nil
         out << nil
         out << nil

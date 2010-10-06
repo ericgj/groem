@@ -6,17 +6,17 @@ Autotest.add_hook :initialize do |at|
   at.testlib = 'minitest/spec'
   
 # Note only unit tests are autotest'ed here
-  at.add_mapping(/^spec\/unit\/.*_spec\.rb$/) do |filename, _|
+  at.add_mapping(/^spec\/unit\/.*\.rb$/) do |filename, _|
     filename
   end
   
 # To include functional and integration tests, uncomment these lines
-#  at.add_mapping(/^spec\/functional\/.*\.rb$/) do |filename, _|
-#    filename
-#  end
-#  at.add_mapping(/^spec\/integration\/.*\.rb$/) do |filename, _|
-#    filename
-#  end
+  at.add_mapping(/^spec\/functional\/.*\.rb$/) do |filename, _|
+    filename
+  end
+  at.add_mapping(/^spec\/integration\/.*\.rb$/) do |filename, _|
+    filename
+  end
 
 end
 

@@ -29,7 +29,10 @@ module MarshalHelper
   
   def self.dummy_request(env = {}, hdrs = {}, notifs = {})
     klass = dummy_request_class
-    klass.new({'environment' => env, 'headers' => hdrs, 'notifications' => notifs})
+    klass.new({'environment' => env, 
+               'headers' => hdrs,
+               'notifications' => notifs
+              })
   end
   
   

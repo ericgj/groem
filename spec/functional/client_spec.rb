@@ -12,15 +12,15 @@ describe 'EM_GNTP::Client' do
                      'request_method' => 'REGISTER',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'application_icon' => 'http://www.site.org/image.jpg'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Application-Icon' => 'http://www.site.org/image.jpg'
                     }
                     
       @input_notifs = { 'Download Complete' => {
-                            'notification_display_name' => 'Download completed',
-                            'notification_enabled' => 'True',
-                            'x_language' => 'English',
-                            'x_timezone' => 'PST'
+                            'Notification-Display-Name' => 'Download completed',
+                            'Notification-Enabled' => 'True',
+                            'X-Language' => 'English',
+                            'X-Timezone' => 'PST'
                         }
                       }
                       
@@ -41,7 +41,7 @@ describe 'EM_GNTP::Client' do
       callback_count = 0
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input)
+        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.each_ok_response do |resp|
           puts "Client received OK response"
@@ -82,15 +82,15 @@ describe 'EM_GNTP::Client' do
                      'request_method' => 'REGISTER',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'application_icon' => 'http://www.site.org/image.jpg'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Application-Icon' => 'http://www.site.org/image.jpg'
                     }
                     
       @input_notifs = { 'Download Complete' => {
-                            'notification_display_name' => 'Download completed',
-                            'notification_enabled' => 'True',
-                            'x_language' => 'English',
-                            'x_timezone' => 'PST'
+                            'Notification-Display_name' => 'Download completed',
+                            'Notification-Enabled' => 'True',
+                            'X-Language' => 'English',
+                            'X-Timezone' => 'PST'
                         }
                       }
                       
@@ -111,7 +111,7 @@ describe 'EM_GNTP::Client' do
       callback_count = 0
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input)
+        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.each_ok_response do |resp|
           puts "Client received OK response"
@@ -161,10 +161,10 @@ describe 'EM_GNTP::Client' do
                      'request_method' => 'NOTIFY',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'notification_id' => '999',
-                     'notification_callback_context' => 'default',
-                     'notification_callback_context_type' => 'confirm'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Notification-ID' => '999',
+                     'Notification-Callback-Context' => 'default',
+                     'Notification-Callback-Context-Type' => 'confirm'
                     }
                                           
       @input = MarshalHelper.dummy_request(
@@ -178,7 +178,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input)
+        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.each_ok_response do |resp|
           puts "Client received OK response"
@@ -234,10 +234,10 @@ describe 'EM_GNTP::Client' do
                      'request_method' => 'NOTIFY',
                      'encryption_id' => 'NONE'
                     }
-      @input_hdrs = {'application_name' => 'SurfWriter',
-                     'notification_id' => '999',
-                     'notification_callback_context' => 'default',
-                     'notification_callback_context_type' => 'confirm'
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Notification-ID' => '999',
+                     'Notification-Callback-Context' => 'default',
+                     'Notification-Callback-Context-Type' => 'confirm'
                     }
                                           
       @input = MarshalHelper.dummy_request(
@@ -251,7 +251,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input)
+        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.each_ok_response do |resp|
           puts "Client received OK response"

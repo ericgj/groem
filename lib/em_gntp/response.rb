@@ -12,7 +12,7 @@ module EM_GNTP
     include EM_GNTP::Marshal::Response
     extend Forwardable
     
-    def_delegator :[], :@raw
+    def_delegator :@raw, :[]
     
     def initialize(resp)
       @raw = resp
