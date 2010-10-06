@@ -45,9 +45,9 @@ module EM_GNTP
     def error? ; self.method == GNTP_ERROR_RESPONSE; end
     def callback? ; self.method == GNTP_CALLBACK_RESPONSE; end
     
-    def clicked? ; self.callback_result == GNTP_CLICKED_CALLBACK_RESULT; end
-    def closed? ; self.callback_result == GNTP_CLOSED_CALLBACK_RESULT; end
-    def timeout? ; self.callback_result == GNTP_TIMEOUT_CALLBACK_RESULT; end
+    def clicked? ; self.callback_result == GNTP_CLICK_CALLBACK_RESULT; end
+    def closed? ; self.callback_result == GNTP_CLOSE_CALLBACK_RESULT; end
+    def timeout? ; self.callback_result == GNTP_TIMEDOUT_CALLBACK_RESULT; end
     
   end
 end

@@ -42,7 +42,7 @@ __________
     end
     
     it 'should return Notification-ID header matching input' do
-      @subject[1]['notification_id'].must_equal '999'
+      @subject[1]['Notification-ID'].must_equal '999'
     end
     
     it 'should return nil result' do
@@ -82,7 +82,7 @@ __________
     end
     
     it 'should return Response-Action header matching input' do
-      @subject[1]['response_action'].must_equal 'NOTIFY'
+      @subject[1]['Response-Action'].must_equal 'NOTIFY'
     end
     
     it 'should not return header for Error-Code' do
@@ -130,15 +130,15 @@ __________
     end
     
     it 'should return Notification-ID header matching input' do
-      @subject[1]['notification_id'].must_equal '999'
+      @subject[1]['Notification-ID'].must_equal '999'
     end
     
     it 'should return Notification-Callback-Context-Type matching input' do
-      @subject[1]['notification_callback_context_type'].must_equal 'Confirm'
+      @subject[1]['Notification-Callback-Context-Type'].must_equal 'Confirm'
     end
     
     it 'should not return header for Notification-Callback-Result' do
-      @subject[1].keys.wont_include 'notification_callback_result'
+      @subject[1].keys.wont_include 'Notification-Callback-Result'
     end
     
     it 'should return result matching input' do

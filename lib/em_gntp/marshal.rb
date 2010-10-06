@@ -57,9 +57,9 @@ module EM_GNTP
   
     GNTP_ERROR_CODE_OK = '0'
  
-    GNTP_CLICKED_CALLBACK_RESULT = 'CLICKED'
-    GNTP_CLOSED_CALLBACK_RESULT = 'CLOSED'
-    GNTP_TIMEOUT_CALLBACK_RESULT = 'TIMEOUT'
+    GNTP_CLICK_CALLBACK_RESULT = 'CLICK'
+    GNTP_CLOSE_CALLBACK_RESULT = 'CLOSE'
+    GNTP_TIMEDOUT_CALLBACK_RESULT = 'TIMEDOUT'
     
   end
   
@@ -226,7 +226,7 @@ module EM_GNTP
                           :headers
                         end
           end
-          puts "state #{state} --> #{new_state}"
+          #puts "state #{state} --> #{new_state}"
           state = new_state
           line = line.chomp if line
           [line, state]

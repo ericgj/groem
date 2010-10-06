@@ -81,15 +81,15 @@ module EM_GNTP
     end
     
     def when_clicked path=nil, &blk
-      when_notify GNTP_CLICKED_CALLBACK_RESULT, path, &blk
+      when_notify GNTP_CLICK_CALLBACK_RESULT, path, &blk
     end
     
     def when_closed path=nil, &blk
-      when_notify GNTP_CLOSED_CALLBACK_RESULT, path, &blk
+      when_notify GNTP_CLOSE_CALLBACK_RESULT, path, &blk
     end
     
     def when_timeout path=nil, &blk
-      when_notify GNTP_TIMEOUT_CALLBACK_RESULT, path, &blk
+      when_notify GNTP_TIMEDOUT_CALLBACK_RESULT, path, &blk
     end
     
     def when_notify action, path=nil, &blk

@@ -42,15 +42,15 @@ __________
     end
     
     it 'headers hash should have application_name == SurfWriter' do
-      @subject['headers']['application_name'].must_equal 'SurfWriter'
+      @subject['headers']['Application-Name'].must_equal 'SurfWriter'
     end
     
     it 'headers hash should have notifications_count == 1' do
-      @subject['headers']['notifications_count'].must_equal '1'
+      @subject['headers']['Notifications-Count'].must_equal '1'
     end
     
     it 'headers hash should have x_application_id == 08d6c05a21512a79a1dfeb9d2a8f262f' do
-      @subject['headers']['x_application_id'].must_equal '08d6c05a21512a79a1dfeb9d2a8f262f'
+      @subject['headers']['X-Application-ID'].must_equal '08d6c05a21512a79a1dfeb9d2a8f262f'
     end
     
     it 'notifications hash should have 1 key' do
@@ -70,15 +70,15 @@ __________
     end
     
     it '\'Download Complete\' notification should have x_timezone == \'PST\'' do
-      @subject['notifications']['Download Complete']['X_Timezone'].must_equal 'PST'
+      @subject['notifications']['Download Complete']['X-Timezone'].must_equal 'PST'
     end
     
     it '\'Download Complete\' notification should have x_language == \'English\'' do
-      @subject['notifications']['Download Complete']['X_Language'].must_equal 'English'
+      @subject['notifications']['Download Complete']['X-Language'].must_equal 'English'
     end
     
     it 'headers hash should not have x_timezone key' do
-      @subject['headers'].has_key?('X_Timezone').must_equal false
+      @subject['headers'].has_key?('X-Timezone').must_equal false
     end
     
   end
