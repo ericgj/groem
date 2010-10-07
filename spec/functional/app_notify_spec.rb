@@ -59,7 +59,10 @@ end
 module AppNotifyCallbacksHelper
 
 
-  def should_receive_ok_and_callback(app, rslt, timeout)
+  def should_receive_ok_and_callback(app, rslt, timeout, opts = {})
+    click_name = opts[:click] || 'CLICK'
+    close_name = opts[:close] || 'CLOSE'
+    timedout_name = opts[:timedout] || 'TIMEDOUT'
     ok_count = 0
     click_count = 0
     close_count = 0
@@ -72,22 +75,22 @@ module AppNotifyCallbacksHelper
         end
       end
      
-      app.when_callback 'CLICK' do |resp|
+      app.when_callback click_name do |resp|
         puts "App received callback: #{resp[2]}"
         click_count += 1
-        resp[2].must_equal 'CLICK'
+        ['CLICK', 'CLICKED'].must_include resp[2]
       end
       
-      app.when_callback 'CLOSE' do |resp|
+      app.when_callback close_name do |resp|
         puts "App received callback: #{resp[2]}"
         close_count += 1
-        resp[2].must_equal 'CLOSE'
+        ['CLOSE', 'CLOSED'].must_include resp[2]
       end
       
-      app.when_callback 'TIMEDOUT' do |resp|
+      app.when_callback timedout_name do |resp|
         puts "App received callback: #{resp[2]}"
         timedout_count += 1
-        resp[2].must_equal 'TIMEDOUT'
+        ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]
       end
       
       app.notify('Foo') do |resp|
@@ -117,8 +120,10 @@ module AppNotifyCallbacksHelper
     }
   end
 
-  def should_receive_ok_and_callback_outside_reactor(app, rslt, timeout)
-
+  def should_receive_ok_and_callback_outside_reactor(app, rslt, timeout, opts = {})
+    click_name = opts[:click] || 'CLICK'
+    close_name = opts[:close] || 'CLOSE'
+    timedout_name = opts[:timedout] || 'TIMEDOUT'
     ok_count = 0
     click_count = 0
     close_count = 0
@@ -130,22 +135,22 @@ module AppNotifyCallbacksHelper
       end
     end
    
-    app.when_callback 'CLICK' do |resp|
+    app.when_callback click_name do |resp|
       puts "App received callback: #{resp[2]}"
       click_count += 1
-      resp[2].must_equal 'CLICK'
+      ['CLICK', 'CLICKED'].must_include resp[2]
     end
     
-    app.when_callback 'CLOSE' do |resp|
+    app.when_callback close_name do |resp|
       puts "App received callback: #{resp[2]}"
       close_count += 1
-      resp[2].must_equal 'CLOSE'
+      ['CLOSE', 'CLOSED'].must_include resp[2]
     end
     
-    app.when_callback 'TIMEDOUT' do |resp|
+    app.when_callback timedout_name do |resp|
       puts "App received callback: #{resp[2]}"
       timedout_count += 1
-      resp[2].must_equal 'TIMEDOUT'
+      ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]
     end
     
     app.notify('Foo') do |resp|
@@ -170,6 +175,7 @@ module AppNotifyCallbacksHelper
     end
     
   end
+  
   
 end
 
@@ -198,6 +204,20 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
       should_receive_ok_and_callback_outside_reactor(@subject, 'CLICK', 2)
     end
     
+    it 'should receive ok and CLICK callback using symbolized actions' do
+      should_receive_ok_and_callback(@subject, 'CLICK', 2, 
+                                     :click => :click, 
+                                     :close => :closed, 
+                                     :timedout => :timedout)
+    end
+    
+    it 'should receive ok and CLICK callback with alternate action names' do
+      should_receive_ok_and_callback(@subject, 'CLICK', 2, 
+                                     :click => 'CLICKED', 
+                                     :close => 'CLOSED', 
+                                     :timedout => 'TIMEOUT')
+    end
+    
   end
   
   describe 'when CLOSE callback returned' do
@@ -217,6 +237,20 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
       should_receive_ok_and_callback(@subject, 'CLOSE', 2)
     end
     
+    it 'should receive ok and CLOSE callback using symbolized actions' do
+      should_receive_ok_and_callback(@subject, 'CLOSE', 2, 
+                                     :click => :click, 
+                                     :close => :closed, 
+                                     :timedout => :timedout)
+    end
+    
+    it 'should receive ok and CLOSE callback with alternate action names' do
+      should_receive_ok_and_callback(@subject, 'CLOSE', 2, 
+                                     :click => 'CLICKED', 
+                                     :close => 'CLOSED', 
+                                     :timedout => 'TIMEOUT')
+    end
+
   end
   
   describe 'when TIMEDOUT callback returned' do
@@ -236,6 +270,20 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
       should_receive_ok_and_callback(@subject, 'TIMEDOUT', 2)
     end
       
+    it 'should receive ok and TIMEDOUT callback using symbolized actions' do
+      should_receive_ok_and_callback(@subject, 'TIMEDOUT', 2, 
+                                     :click => :click, 
+                                     :close => :closed, 
+                                     :timedout => :timedout)
+    end
+    
+    it 'should receive ok and TIMEDOUT callback with alternate action names' do
+      should_receive_ok_and_callback(@subject, 'TIMEDOUT', 2, 
+                                     :click => 'CLICKED', 
+                                     :close => 'CLOSED', 
+                                     :timedout => 'TIMEOUT')
+    end
+
   end
   
 end
@@ -264,12 +312,12 @@ describe 'EM_GNTP::App #notify with routed callbacks' do
         end
       end
      
-      app.when_click 'You/*' do |resp|
+      app.when_click 'You' do |resp|
         cb_count.must_equal 1
         cb_count += 1
       end
       
-      app.when_click 'You/shiny' do |resp|
+      app.when_click :context => 'You', :type => 'shiny' do |resp|
         cb_count.must_equal 0
         cb_count += 1
       end
@@ -279,7 +327,7 @@ describe 'EM_GNTP::App #notify with routed callbacks' do
         cb_count += 1
       end
       
-      app.when_click '*/shiny' do |resp|
+      app.when_click :type => 'shiny' do |resp|
         cb_count.must_equal 2
         cb_count += 1
       end

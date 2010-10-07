@@ -26,6 +26,8 @@ module EM_GNTP
       to_request[key]
     end
     
+    def application_name; self.headers[GNTP_APPLICATION_NAME_KEY]; end
+    
     def register(&blk)
       if blk.arity == 1
         blk.call(self)
@@ -38,7 +40,7 @@ module EM_GNTP
     def notify(name, title = nil, opts = {}, &blk)
       return unless n = self.notifications[name]
       n.reset!    # forces new notification id
-      n.title = title if title
+      n.title = title ? title : application_name
       opts.each_pair {|k, v| n.__send__ :"#{k}=", v}
       send_notify(n, &blk)      
     end
@@ -46,7 +48,7 @@ module EM_GNTP
     def notification(name, *args, &blk)
       n = EM_GNTP::Notification.new(name, *args)
       yield(n)
-      n.application_name = self.headers[GNTP_APPLICATION_NAME_KEY]
+      n.application_name = application_name
       self.notifications[name] = n
     end
    
@@ -93,6 +95,15 @@ module EM_GNTP
     end
     
     def when_callback action, path=nil, &blk
+      action = growlify_action(action)
+      path = \
+        case path
+        when String
+          [path, nil]
+        when Hash
+          [path[:context], path[:type]]
+        end
+          
       notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
     end
     

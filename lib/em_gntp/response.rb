@@ -42,12 +42,18 @@ module EM_GNTP
     def to_notify? ; self.action == GNTP_NOTIFY_METHOD; end
     
     def ok? ; self.method == GNTP_OK_RESPONSE; end
-    def error? ; self.method == GNTP_ERROR_RESPONSE; end
     def callback? ; self.method == GNTP_CALLBACK_RESPONSE; end
+    def error?(code=nil)
+      self.method == GNTP_ERROR_RESPONSE  && \
+        code.nil? || self.status == code
+    end
     
     def clicked? ; self.callback_result == GNTP_CLICK_CALLBACK_RESULT; end
     def closed? ; self.callback_result == GNTP_CLOSE_CALLBACK_RESULT; end
-    def timeout? ; self.callback_result == GNTP_TIMEDOUT_CALLBACK_RESULT; end
+    def timedout? ; self.callback_result == GNTP_TIMEDOUT_CALLBACK_RESULT; end
+    alias_method :click?, :clicked?
+    alias_method :close?, :closed?
+    alias_method :timeout?, :timedout?
     
   end
 end

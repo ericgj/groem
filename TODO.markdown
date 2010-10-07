@@ -1,7 +1,16 @@
 ## Oct 7
 
-4. Add App functional tests for register, notify, and callbacks
-5. Add integration tests for App register, notify, and callbacks
+1. Refactor routing to use separate parts instead of "/"
+2. Allow CLOSE|CLOSED, CLICK|CLICKED, TIMEOUT|TIMEDOUT or symbols
+3. Refactor response array - 3rd element should be hash with all Notification- headers in it
+4. Add integration tests for App notify with callbacks
+5. Clean up constants; take out GNTP_
+6. Rename EM_GNTP to Groem?
+7. Take out debugging lines from Client
+8. Gem release ??
+
+
+
 
 ## This is what I see as the order of work
 

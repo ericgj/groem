@@ -10,7 +10,10 @@
     
     app.register do
       icon 'http://www.example.com'
+      header 'X-Custom-Header', 'default value'
 
+      # notification with callback expected
+      
       notification :started, 'Your thing has started!' do |n|
         n.header 'Data-Filename'
         n.icon 'path/to/local/file.png'   #=> generates x-growl-resource
@@ -18,29 +21,12 @@
         n.callback 'process', :type => 'confirm'
       end
       
+      # notification with no callback
+      
       notification :finished, :enabled => true
       
-      header 'X-Custom-Header', 'default value'
     end
 
-- **Callbacks**
-    
-    app.callbacks do
-    
-      when_closed :started do |response|
-        # do something with closed responses to :started notifications
-      end
-      
-      when_clicked '*/process/confirm' do |response|
-        # do something with click responses to all 'process' contexts of type 'confirm'
-      end
-      
-      when_timeout do |response|  
-        # do something with any timeout response regardless of context
-      end
-    
-    end 
- 
 - **Notification**
     
     #  trigger notify and callbacks
@@ -59,4 +45,24 @@
     response.error?  { # handle any ERROR response }
     response.error?(400) { # handle ERROR 400 (not authorized) response }
     
+        
+- **Callbacks**
+
+    app.when_close 'process' do |response|
+      # do something with close responses to process notifications
+    end
+      
+    app.when_click :context => 'process', :type => 'confirm' do |response|
+      # do something with click responses that have 'process' contexts of type 'confirm'
+    end
+      
+    app.when_click :type => 'integer' do |response|
+      # do something with click responses that have type 'integer' regardless of context
+    end
+      
+    app.when_timedout do |response|  
+      # do something with any timeout response regardless of context or type
+    end
+      
+    end
     

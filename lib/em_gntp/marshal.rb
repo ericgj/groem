@@ -10,19 +10,21 @@ module EM_GNTP
       end
     end
     
- #   def underscorize(key)
- #     key.to_s.downcase.tr('-','_')
- #   end
- #   
- #   def dasherize(key)
- #     key.to_s.tr('_','-')
- #   end
-
     def growlify_key(str)
       parts = str.to_s.tr('_','-').split('-')
       parts.map {|p| p[0..0].upcase + p[1..-1]}.join('-')
     end
     
+    def growlify_action(str)
+      act = str.to_s.upcase
+      act = {'CLICK' => GNTP_CLICK_CALLBACK_RESULT,
+             'CLICKED' => GNTP_CLICK_CALLBACK_RESULT,
+             'CLOSE' => GNTP_CLOSE_CALLBACK_RESULT,
+             'CLOSED' => GNTP_CLOSE_CALLBACK_RESULT,
+             'TIMEOUT' => GNTP_TIMEDOUT_CALLBACK_RESULT,
+             'TIMEDOUT' => GNTP_TIMEDOUT_CALLBACK_RESULT
+            }[act]
+    end
      
     ENVIRONMENT_KEY = 'environment'
     HEADERS_KEY = 'headers'
