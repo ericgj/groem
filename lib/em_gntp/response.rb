@@ -4,7 +4,7 @@ module EM_GNTP
   class Response < Struct.new(:status,
                               :method,
                               :action,
-                              :notification_name,
+                              :notification_id,
                               :context,
                               :context_type,
                               :callback_result,
@@ -27,7 +27,7 @@ module EM_GNTP
                       GNTP_ERROR_RESPONSE
                     end
       self.action = resp[1][(GNTP_RESPONSE_ACTION_KEY)]
-      self.notification_name = resp[1][(GNTP_NOTIFICATION_NAME_KEY)]
+      self.notification_id = resp[1][(GNTP_NOTIFICATION_ID_KEY)]
       self.context = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
       self.context_type = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
       self.headers = resp[1]
@@ -35,7 +35,7 @@ module EM_GNTP
     end
     
     def callback_route
-      [self.callback_result, self.notification_name, self.context, self.context_type]
+      [self.callback_result, self.context, self.context_type]
     end
     
     def to_register? ; self.action == GNTP_REGISTER_METHOD; end

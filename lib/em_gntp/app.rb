@@ -81,15 +81,15 @@ module EM_GNTP
     end
     
     def when_click path=nil, &blk
-      when_notify GNTP_CLICK_CALLBACK_RESULT, path, &blk
+      when_callback GNTP_CLICK_CALLBACK_RESULT, path, &blk
     end
     
     def when_close path=nil, &blk
-      when_notify GNTP_CLOSE_CALLBACK_RESULT, path, &blk
+      when_callback GNTP_CLOSE_CALLBACK_RESULT, path, &blk
     end
     
     def when_timedout path=nil, &blk
-      when_notify GNTP_TIMEDOUT_CALLBACK_RESULT, path, &blk
+      when_callback GNTP_TIMEDOUT_CALLBACK_RESULT, path, &blk
     end
     
     def when_callback action, path=nil, &blk
@@ -113,44 +113,31 @@ module EM_GNTP
 
     def send_register
       EM_GNTP::Client.response_class = EM_GNTP::Response
-      if EM.reactor_running?
+      stop_after = !(EM.reactor_running?)
+      EM.run {
         connect = EM_GNTP::Client.register(self, host, port)
-        connect.callback &:register_callback if register_callback
-        connect.errback &:register_errback if register_errback
-      else
-        EM.run {
-          connect = EM_GNTP::Client.register(self, host, port)
-          connect.callback do |resp| 
-            register_callback.call(resp) if register_callback
-            EM.stop
-          end
-          connect.errback do |resp| 
-            register_errback.call(resp) if register_errback
-            EM.stop
-          end
-        }
-      end
+        connect.callback do |resp| 
+          register_callback.call(resp) if register_callback
+          EM.stop if stop_after
+        end
+        connect.errback do |resp| 
+          register_errback.call(resp) if register_errback
+          EM.stop if stop_after
+        end
+      }
     end
     
     def send_notify(notif, &blk)
       EM_GNTP::Client.response_class = EM_GNTP::Response
-      if EM.reactor_running?
+      stop_after = !(EM.reactor_running?)
+      EM.run {
         connect = EM_GNTP::Client.notify(notif, host, port)
-        connect.callback &blk
-        connect.errback &blk
+        connect.callback { |resp| blk.call(resp); EM.stop if stop_after }
+        connect.errback  { |resp| blk.call(resp); EM.stop if stop_after }
         connect.each_callback_response do |resp|
           route_response(resp)
-        end
-      else
-        EM.run {
-          connect = EM_GNTP::Client.notify(notif, host, port)
-          connect.callback { |resp| blk.call(resp); EM.stop }
-          connect.errback  { |resp| blk.call(resp); EM.stop }
-          connect.each_callback_response do |resp|
-            route_response(resp)
-         end
-        }
-      end
+       end
+      }
     end
     
     def notifications_to_register

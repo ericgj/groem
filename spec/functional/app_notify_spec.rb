@@ -116,6 +116,60 @@ module AppNotifyCallbacksHelper
       
     }
   end
+
+  def should_receive_ok_and_callback_outside_reactor(app, rslt, timeout)
+
+    ok_count = 0
+    click_count = 0
+    close_count = 0
+    timedout_count = 0
+    
+    app.register do
+      notification 'Foo' do |n|
+        n.callback 'You', :type => 'shiny'
+      end
+    end
+   
+    app.when_callback 'CLICK' do |resp|
+      puts "App received callback: #{resp[2]}"
+      click_count += 1
+      resp[2].must_equal 'CLICK'
+    end
+    
+    app.when_callback 'CLOSE' do |resp|
+      puts "App received callback: #{resp[2]}"
+      close_count += 1
+      resp[2].must_equal 'CLOSE'
+    end
+    
+    app.when_callback 'TIMEDOUT' do |resp|
+      puts "App received callback: #{resp[2]}"
+      timedout_count += 1
+      resp[2].must_equal 'TIMEDOUT'
+    end
+    
+    app.notify('Foo') do |resp|
+      ok_count += 1 if resp[0].to_i == 0
+      resp[0].to_i.must_equal 0
+    end
+  
+    ok_count.must_equal 1
+    case rslt
+    when 'CLICK'
+      click_count.must_equal 1
+      close_count.must_equal 0
+      timedout_count.must_equal 0
+    when 'CLOSE'
+      click_count.must_equal 0
+      close_count.must_equal 1
+      timedout_count.must_equal 0
+    when 'TIMEDOUT'
+      click_count.must_equal 0
+      close_count.must_equal 0
+      timedout_count.must_equal 1
+    end
+    
+  end
   
 end
 
@@ -138,6 +192,10 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
     
     it 'should receive ok and CLICK callback' do
       should_receive_ok_and_callback(@subject, 'CLICK', 2)
+    end
+
+    it 'should receive ok and CLICK callback outside reactor' do
+      should_receive_ok_and_callback_outside_reactor(@subject, 'CLICK', 2)
     end
     
   end
@@ -185,4 +243,55 @@ end
 
 describe 'EM_GNTP::App #notify with routed callbacks' do
 
+    before do
+      @p_svr = DummyServerHelper.fork_server(:callback => ['CLICK', 2])
+      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+    end
+    
+    after do
+      DummyServerHelper.kill_server(@p_svr)
+    end    
+    
+    it 'should receive ok and CLICK callback matching multiple routes' do
+      ok_count = 0
+      cb_count = 0
+      
+      app = @subject
+      app.register do
+        notification 'Foo' do |n|
+          n.callback 'You', :type => 'shiny'
+        end
+      end
+     
+      app.when_click 'You/*' do |resp|
+        cb_count.must_equal 1
+        cb_count += 1
+      end
+      
+      app.when_click 'You/shiny' do |resp|
+        cb_count.must_equal 0
+        cb_count += 1
+      end
+      
+      app.when_click do |resp|
+        cb_count.must_equal 3
+        cb_count += 1
+      end
+      
+      app.when_click '*/shiny' do |resp|
+        cb_count.must_equal 2
+        cb_count += 1
+      end
+      
+      app.notify('Foo') do |resp|
+        ok_count += 1 if resp[0].to_i == 0
+        resp[0].to_i.must_equal 0
+      end
+
+      ok_count.must_equal 1
+      cb_count.must_equal 4
+    end
+
+    
 end

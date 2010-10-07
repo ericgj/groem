@@ -5,8 +5,8 @@ module EM_GNTP
     class << self
       def parse action, path
         path ||= ''
-        parts = path.split('/')[0..2].map {|p| p == '*' ? nil : p}
-        [action] + Array.new(3).fill {|i| parts[i] }
+        parts = path.split('/')[0..1].map {|p| p == '*' ? nil : p}
+        [action] + Array.new(2).fill {|i| parts[i] }
       end
     
       def matches? pattern, parts
