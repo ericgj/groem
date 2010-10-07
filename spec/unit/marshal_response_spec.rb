@@ -45,8 +45,8 @@ __________
       @subject[1]['Notification-ID'].must_equal '999'
     end
     
-    it 'should return nil result' do
-      @subject[2].must_equal nil
+    it 'should return empty callback hash' do
+      @subject[2].must_be_empty
     end
         
   end
@@ -89,8 +89,8 @@ __________
       @subject[1].keys.wont_include 'error_code'
     end
     
-    it 'should return nil result' do
-      @subject[2].must_equal nil
+    it 'should return empty result' do
+      @subject[2].must_be_empty
     end
     
   end
@@ -125,24 +125,37 @@ __________
       @subject[0].to_i.must_equal 0
     end
     
-    it 'should return headers hash with 6 keys' do
-      @subject[1].keys.size.must_equal 6
+    it 'should return headers hash with 3 keys' do
+      @subject[1].keys.size.must_equal 3
     end
     
-    it 'should return Notification-ID header matching input' do
+    it 'should return Notification-ID matching input' do
       @subject[1]['Notification-ID'].must_equal '999'
     end
     
-    it 'should return Notification-Callback-Context-Type matching input' do
-      @subject[1]['Notification-Callback-Context-Type'].must_equal 'Confirm'
+    it 'should return context matching input' do
+      @subject[2]['Notification-Callback-Context'].must_equal 'Test'
     end
     
-    it 'should not return header for Notification-Callback-Result' do
-      @subject[1].keys.wont_include 'Notification-Callback-Result'
+    it 'should return context-type matching input' do
+      @subject[2]['Notification-Callback-Context-Type'].must_equal 'Confirm'
+    end
+    
+    it 'should return timestamp matching input' do
+      @subject[2]['Notification-Callback-Timestamp'].must_equal '2010-10-01 22:21:00Z'
     end
     
     it 'should return result matching input' do
-      @subject[2].must_equal 'CLICKED'
+      @subject[2]['Notification-Callback-Result'].must_equal 'CLICKED'
+    end
+    
+    it 'should not return header for Notification-Callback-*' do
+      %w{Notifiction-Callback-Context
+         Notification-Callback-Context-Type
+         Notification-Callback-Timestamp
+         Notification-Callback-Result}.each do |key|
+          @subject[1].keys.wont_include key
+        end
     end
     
   end

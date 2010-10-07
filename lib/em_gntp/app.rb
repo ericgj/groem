@@ -103,7 +103,7 @@ module EM_GNTP
         when Hash
           [path[:context], path[:type]]
         end
-          
+      #puts "App defined callback: #{action} #{path.inspect}"      
       notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
     end
     

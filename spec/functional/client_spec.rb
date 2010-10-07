@@ -47,6 +47,7 @@ describe 'EM_GNTP::Client' do
           puts "Client received OK response"
           ok_count += 1
           resp[0].to_i.must_equal 0
+          resp[2].must_be_empty
         end
         
         connect.each_error_response do |resp|
@@ -122,6 +123,7 @@ describe 'EM_GNTP::Client' do
           puts "Client received error response"
           error_count += 1
           resp[0].to_i.must_equal @error_code.to_i
+          resp[2].must_be_empty
         end
         
         connect.each_callback_response do |resp|
@@ -184,6 +186,7 @@ describe 'EM_GNTP::Client' do
           puts "Client received OK response"
           @ok_count += 1
           resp[0].to_i.must_equal 0
+          resp[2].must_be_empty
         end
         
         connect.each_error_response do |resp|
@@ -193,7 +196,7 @@ describe 'EM_GNTP::Client' do
         
         connect.each_callback_response do |resp|
           puts "Client received callback response"
-          resp[2].must_equal @callback_result
+          resp[2]['Notification-Callback-Result'].must_equal @callback_result
           @callback_count += 1
         end
         
@@ -262,6 +265,7 @@ describe 'EM_GNTP::Client' do
           puts "Client received error response"
           @error_count += 1
           resp[0].to_i.must_equal @error_code.to_i
+          resp[2].must_be_empty
         end
         
         connect.each_callback_response do |resp|

@@ -76,21 +76,21 @@ module AppNotifyCallbacksHelper
       end
      
       app.when_callback click_name do |resp|
-        puts "App received callback: #{resp[2]}"
+        puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
         click_count += 1
-        ['CLICK', 'CLICKED'].must_include resp[2]
+        ['CLICK', 'CLICKED'].must_include resp[2]['Notification-Callback-Result']
       end
       
       app.when_callback close_name do |resp|
-        puts "App received callback: #{resp[2]}"
+        puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
         close_count += 1
-        ['CLOSE', 'CLOSED'].must_include resp[2]
+        ['CLOSE', 'CLOSED'].must_include resp[2]['Notification-Callback-Result']
       end
       
       app.when_callback timedout_name do |resp|
-        puts "App received callback: #{resp[2]}"
+        puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
         timedout_count += 1
-        ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]
+        ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]['Notification-Callback-Result']
       end
       
       app.notify('Foo') do |resp|
@@ -136,21 +136,21 @@ module AppNotifyCallbacksHelper
     end
    
     app.when_callback click_name do |resp|
-      puts "App received callback: #{resp[2]}"
+      puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
       click_count += 1
-      ['CLICK', 'CLICKED'].must_include resp[2]
+      ['CLICK', 'CLICKED'].must_include resp[2]['Notification-Callback-Result']
     end
     
     app.when_callback close_name do |resp|
-      puts "App received callback: #{resp[2]}"
+      puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
       close_count += 1
-      ['CLOSE', 'CLOSED'].must_include resp[2]
+      ['CLOSE', 'CLOSED'].must_include resp[2]['Notification-Callback-Result']
     end
     
     app.when_callback timedout_name do |resp|
-      puts "App received callback: #{resp[2]}"
+      puts "App received callback: #{resp[2]['Notification-Callback-Result']}"
       timedout_count += 1
-      ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]
+      ['TIMEDOUT', 'TIMEOUT'].must_include resp[2]['Notification-Callback-Result']
     end
     
     app.notify('Foo') do |resp|

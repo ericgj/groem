@@ -1,8 +1,8 @@
 ## Oct 7
 
-1. Refactor routing to use separate parts instead of "/"
-2. Allow CLOSE|CLOSED, CLICK|CLICKED, TIMEOUT|TIMEDOUT or symbols
-3. Refactor response array - 3rd element should be hash with all Notification- headers in it
+DONE 1. Refactor routing to use separate parts instead of "/"
+DONE 2. Allow CLOSE|CLOSED, CLICK|CLICKED, TIMEOUT|TIMEDOUT or symbols
+DONE 3. Refactor response array - 3rd element should be hash with all Notification-Callback- headers in it
 4. Add integration tests for App notify with callbacks
 5. Clean up constants; take out GNTP_
 6. Rename EM_GNTP to Groem?

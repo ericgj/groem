@@ -19,6 +19,7 @@ describe 'EM_GNTP::App #register' do
       @subject.when_register do |resp|
         count += 1
         resp[0].to_i.must_equal 0
+        resp[2].must_be_empty
         count.must_equal 1
       end
       
@@ -52,6 +53,7 @@ describe 'EM_GNTP::App #register' do
       @subject.when_register do |resp|
         count += 1
         resp[0].to_i.must_equal 0
+        resp[2].must_be_empty
         count.must_equal 1
       end
       

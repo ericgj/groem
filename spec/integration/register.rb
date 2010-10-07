@@ -94,3 +94,5 @@ describe 'Sending a REGISTER request to Growl' do
   end
   
 end
+
+# TODO: integration tests using App interface

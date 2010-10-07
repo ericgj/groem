@@ -326,14 +326,14 @@ module EM_GNTP
       
         # Load GNTP response into array of:
         #     status  (error code or '0' for OK) 
-        #     hash of headers  (except error code and callback result)
-        #     callback result (for callback responses, otherwise nil)
+        #     hash of headers  (except error code and notification-callback-*)
+        #     hash of callback headers (for callback responses, otherwise {})
         #
         # Note this is explicitly modeled after Rack's interface
         #
         def load(input, klass = self)
-          env, hdrs = {}, {}
-          status, meth, cb_rslt = nil
+          env, hdrs, cb_hdrs = {}, {}, {}
+          status, meth = nil
           section = :init
           s = StringScanner.new(input)
           until s.eos?
@@ -346,15 +346,21 @@ module EM_GNTP
             end
           end
           
-          # pull out status and callback result
-          status = hdrs.delete((GNTP_ERROR_CODE_KEY))
-          cb_rslt = hdrs.delete((GNTP_NOTIFICATION_CALLBACK_RESULT_KEY))
+          # pull out status from headers
+          status = hdrs.delete(GNTP_ERROR_CODE_KEY)
+          status ||= GNTP_ERROR_CODE_OK
           
-          # set status OK unless already set by error code and unless -ERROR response
-          meth = env[(GNTP_RESPONSE_METHOD_KEY)]
-          status ||= GNTP_ERROR_CODE_OK unless meth == GNTP_ERROR_RESPONSE
+          # pull out notification-callback-* from headers
+          [GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY,
+           GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY,
+           GNTP_NOTIFICATION_CALLBACK_RESULT_KEY,
+           GNTP_NOTIFICATION_CALLBACK_TIMESTAMP_KEY].each do |key|
+            if val = hdrs.delete(key)
+              cb_hdrs[key] = val
+            end
+          end
           
-          out = [ status, hdrs, cb_rslt ]
+          out = [ status, hdrs, cb_hdrs ]
                 
           klass ? klass.new(out) : out
         end

@@ -131,7 +131,7 @@ module EM_GNTP
       @state = \
         case resp[0].to_i
         when 0
-          if resp[2]
+          if resp[2][GNTP_NOTIFICATION_CALLBACK_RESULT_KEY]
             :callback
           else
             :ok

@@ -64,9 +64,9 @@ module NotifyTestHelper
       end
       connect.each_callback_response do |resp|
         count += 1
-        resp[2].wont_be_nil
+        resp[2].wont_be_empty
         puts "Callback response received back:\n#{resp.inspect}"
-        puts "Does this action match what you did? #{resp[2]}"
+        puts "Does this action match what you did? #{resp[2]['Notification-Callback-Result']}"
         EM.stop
       end
       connect.errback do |resp|
@@ -132,5 +132,8 @@ Notification-Callback-Context-Type: Type
   
   
 end
+
+
+# TODO: integration tests using App interface
 
 

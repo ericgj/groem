@@ -17,8 +17,14 @@ module EM_GNTP
     def initialize(resp)
       @raw = resp
       self.status = resp[0]
-      self.method = if resp[0].to_i == 0
-                      if resp[2]
+      self.headers = resp[1]
+      self.action = resp[1][GNTP_RESPONSE_ACTION_KEY]
+      self.notification_id = resp[1][GNTP_NOTIFICATION_ID_KEY]
+      self.context = resp[2][GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY]
+      self.context_type = resp[2][GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY]
+      self.callback_result = resp[2][GNTP_NOTIFICATION_CALLBACK_RESULT_KEY]
+      self.method = if self.status.to_i == 0
+                      if self.callback_result
                         GNTP_CALLBACK_RESPONSE
                       else
                         GNTP_OK_RESPONSE
@@ -26,12 +32,6 @@ module EM_GNTP
                     else
                       GNTP_ERROR_RESPONSE
                     end
-      self.action = resp[1][(GNTP_RESPONSE_ACTION_KEY)]
-      self.notification_id = resp[1][(GNTP_NOTIFICATION_ID_KEY)]
-      self.context = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
-      self.context_type = resp[1][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
-      self.headers = resp[1]
-      self.callback_result = resp[2]
     end
     
     def callback_route

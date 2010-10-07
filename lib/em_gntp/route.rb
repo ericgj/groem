@@ -3,8 +3,7 @@ module EM_GNTP
   class Route
 
     class << self
-      def parse action, path
-        path ||= [nil, nil]
+      def parse action, *path
         [action] + Array.new(2).fill {|i| path[i] }
       end
     
@@ -19,8 +18,9 @@ module EM_GNTP
     
     attr_reader :pattern
     
-    def initialize action, path=nil
-      @pattern = self.class.parse action, path
+    def initialize action, *path
+      path = path.flatten
+      @pattern = self.class.parse action, *path
     end
       
     def matches?(*args)

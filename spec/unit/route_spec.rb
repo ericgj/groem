@@ -9,27 +9,12 @@ describe 'EM_GNTP::Route.parse' do
 
   it 'should parse empty path' do 
     @subject = EM_GNTP::Route.parse 'action', ''
-    @subject.must_equal ['action', nil, nil]
+    @subject.must_equal ['action', '', nil]
   end
   
   it 'should parse action and path' do
-    @subject = EM_GNTP::Route.parse 'action', 'context/type'
+    @subject = EM_GNTP::Route.parse 'action', 'context', 'type'
     @subject.must_equal ['action', 'context', 'type']
-  end
-  
-  it 'should parse * in path' do
-    @subject = EM_GNTP::Route.parse 'action', '*/type'
-    @subject.must_equal ['action', nil, 'type']
-  end
-
-  it 'should parse * at end of path' do
-    @subject = EM_GNTP::Route.parse 'action', 'context/*'
-    @subject.must_equal ['action', 'context', nil]
-  end
-
-  it 'should parse multiple *' do
-    @subject = EM_GNTP::Route.parse 'action', '*/*'
-    @subject.must_equal ['action', nil, nil]
   end
   
   it 'should parse path with less than 2 parts' do
@@ -38,11 +23,31 @@ describe 'EM_GNTP::Route.parse' do
   end
   
   it 'should parse path with greater than 2 parts' do
-    @subject = EM_GNTP::Route.parse 'action', 'context/type/extra'
+    @subject = EM_GNTP::Route.parse 'action', 'context', 'type', 'extra'
     @subject.must_equal ['action', 'context', 'type']
   end
   
 end
+
+describe 'EM_GNTP::Route#parse' do
+
+  it 'should parse nil path' do 
+    @subject = EM_GNTP::Route.new('action')
+    @subject.pattern.must_equal ['action', nil, nil]
+  end
+
+  it 'should parse splatted path' do 
+    @subject = EM_GNTP::Route.new('action', 'context', 'type')
+    @subject.pattern.must_equal ['action', 'context', 'type']
+  end
+
+  it 'should parse array path' do 
+    @subject = EM_GNTP::Route.new('action', ['context', 'type'])
+    @subject.pattern.must_equal ['action', 'context', 'type']
+  end
+  
+end
+
 
 describe 'EM_GNTP::Route.matches?' do
 
@@ -66,22 +71,23 @@ end
 describe 'EM_GNTP::Route#<=>' do
 
   it 'should sort by standard array sort if no nil parts in pattern' do
-    subject = [ s1 = EM_GNTP::Route.new('action', 'c/d'),
-                s2 = EM_GNTP::Route.new('bacon', 'b/c'),
-                s3 = EM_GNTP::Route.new('action', 'b/c')
+    subject = [ s1 = EM_GNTP::Route.new('action', 'c','d'),
+                s2 = EM_GNTP::Route.new('bacon', 'b','c'),
+                s3 = EM_GNTP::Route.new('action', 'b','c')
               ]
     subject.sort.must_equal [s3, s1, s2]
   end
   
   it 'should sort nil parts after non-nil parts in pattern' do
-    subject = [ s1 = EM_GNTP::Route.new('action', 'c/d'),
-                s2 = EM_GNTP::Route.new('bacon', 'b/c'),
-                s3 = EM_GNTP::Route.new('action', 'b/c'),
-                s4 = EM_GNTP::Route.new('action', '*/c'),
-                s5 = EM_GNTP::Route.new('action', '*/b'),
-                s6 = EM_GNTP::Route.new('action', 'c/*')
+    subject = [ s1 = EM_GNTP::Route.new('action', 'c','d'),
+                s2 = EM_GNTP::Route.new('bacon', 'b','c'),
+                s3 = EM_GNTP::Route.new('action', 'b','c'),
+                s4 = EM_GNTP::Route.new('action', nil,'c'),
+                s5 = EM_GNTP::Route.new('action', nil,'b'),
+                s6 = EM_GNTP::Route.new('action', 'c',nil)
               ]
     subject.sort.must_equal [s3, s1, s6, s5, s4, s2]
   end
   
 end
+
