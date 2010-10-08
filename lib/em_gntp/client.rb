@@ -74,16 +74,17 @@ module EM_GNTP
     def initialize(req)
       super
       @req = req
-      @req_action = req[ENVIRONMENT_KEY][(GNTP_REQUEST_METHOD_KEY)] 
-      cb_context = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY)]
-      cb_context_type = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY)]
-      cb_target = req[HEADERS_KEY][(GNTP_NOTIFICATION_CALLBACK_TARGET_KEY)]
+      @req_action = req[ENVIRONMENT_KEY][GNTP_REQUEST_METHOD_KEY] 
+      cb_context = req[HEADERS_KEY][GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY]
+      cb_context_type = req[HEADERS_KEY][GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY]
+      cb_target = req[HEADERS_KEY][GNTP_NOTIFICATION_CALLBACK_TARGET_KEY]
       @wait_for_callback = @req_action == GNTP_NOTIFY_METHOD &&
                            cb_context && cb_context_type && !cb_target
     end
     
     def post_init
       reset_state
+      #puts @req.dump.inspect
       send_data @req.dump
     end
     

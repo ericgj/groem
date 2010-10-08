@@ -136,4 +136,144 @@ end
 
 # TODO: integration tests using App interface
 
+describe 'Registering an App with Growl' do
 
+  before do
+    @app = EM_GNTP::App.new('Apster')
+  end
+  
+  it 'should send and receive one response successfully' do
+    count = 0
+    @app.when_register do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      count += 1
+      resp[0].to_i.must_equal 0
+    end
+    
+    @app.when_register_failed do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      flunk 'Expected OK response, got error connecting or ERROR response'
+    end
+      
+    @app.register do
+      header 'X-Something', 'Foo'
+      notification :starting, :enabled => 'False', :text => "Starting..."
+      notification :finished do |n|
+        n.enabled = 'True'
+        n.text = 'Finished!'
+        n.callback :finished, :type => 'Boolean'
+      end
+    end
+    
+    count.must_equal 1
+  end
+  
+  
+end
+
+
+describe 'Sending a non-callback notification from an App' do
+
+  before do
+    @app = EM_GNTP::App.new('Rapster')
+  end
+  
+  it 'should send and receive register and notify response successfully' do
+    register_count = 0
+    notify_count = 0
+    callback_count = 0
+    @app.when_register do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      register_count += 1
+      resp[0].to_i.must_equal 0
+    end
+    
+    @app.when_register_failed do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      flunk 'Expected OK response from REGISTER, got error connecting or ERROR response'
+    end
+      
+    @app.register do
+      header 'X-Something', 'Foo'
+      notification :starting, :enabled => 'True', :text => "Starting..."
+      notification :finished do |n|
+        n.enabled = 'True'
+        n.text = 'Finished!'
+        n.callback :finished, :type => 'Boolean'
+      end
+    end
+    
+    @app.notify(:starting, 'XYZ has started') do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      resp.ok? { notify_count += 1 }
+      resp.error? { flunk "Expected OK response from NOTIFY, got ERROR #{resp[0]}" }
+      resp.callback? { flunk "Expected OK response from NOTIFY, got CALLBACK" }
+    end
+    
+    register_count.must_equal 1
+    notify_count.must_equal 1
+    callback_count.must_equal 0
+  end
+  
+end
+
+
+describe 'Sending a callback notification from an App' do
+
+  before do
+    @app = EM_GNTP::App.new('Sapster')
+  end
+  
+  it 'should send and receive register and notify response successfully' do
+    register_count = 0
+    notify_count = 0
+    callback_count = 0
+    @app.when_register do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      register_count += 1
+      resp[0].to_i.must_equal 0
+    end
+    
+    @app.when_register_failed do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      flunk 'Expected OK response from REGISTER, got error connecting or ERROR response'
+    end
+      
+    @app.register do
+      header 'X-Something', 'Foo'
+      notification :starting, :enabled => 'True', :text => "Starting..."
+      notification :finished do |n|
+        n.enabled = 'True'
+        n.text = 'Finished!'
+        n.callback :finished, :type => 'Boolean'
+      end
+    end
+    
+    @app.when_click :finished do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      callback_count += 1
+    end
+    
+    @app.when_close :finished do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      callback_count += 1
+    end
+    
+    @app.when_timedout :finished do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      callback_count += 1
+    end
+    
+    @app.notify(:finished, 'XYZ has finished') do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      resp.ok? { notify_count += 1 }
+      resp.error? { flunk "Expected OK response from NOTIFY, got ERROR #{resp[0]}" }
+      resp.callback? { flunk "Expected OK response from NOTIFY, got CALLBACK" }
+    end
+    
+    register_count.must_equal 1
+    notify_count.must_equal 1
+    callback_count.must_equal 1
+  end
+  
+end

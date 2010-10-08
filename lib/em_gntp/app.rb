@@ -45,9 +45,9 @@ module EM_GNTP
       send_notify(n, &blk)      
     end
     
-    def notification(name, *args, &blk)
+    def notification(name, *args)
       n = EM_GNTP::Notification.new(name, *args)
-      yield(n)
+      yield(n) if block_given?
       n.application_name = application_name
       self.notifications[name] = n
     end
@@ -127,13 +127,13 @@ module EM_GNTP
       stop_after = !(EM.reactor_running?)
       EM.run {
         connect = EM_GNTP::Client.register(self, host, port)
-        connect.callback do |resp| 
+        connect.callback { |resp| EM.stop if stop_after }
+        connect.errback  { |resp| EM.stop if stop_after }
+        connect.each_ok_response do |resp| 
           register_callback.call(resp) if register_callback
-          EM.stop if stop_after
         end
-        connect.errback do |resp| 
+        connect.each_error_response do |resp| 
           register_errback.call(resp) if register_errback
-          EM.stop if stop_after
         end
       }
     end
@@ -143,8 +143,14 @@ module EM_GNTP
       stop_after = !(EM.reactor_running?)
       EM.run {
         connect = EM_GNTP::Client.notify(notif, host, port)
-        connect.callback { |resp| blk.call(resp); EM.stop if stop_after }
-        connect.errback  { |resp| blk.call(resp); EM.stop if stop_after }
+        connect.callback { |resp| EM.stop if stop_after }
+        connect.errback  { |resp| EM.stop if stop_after }
+        connect.each_ok_response do |resp|
+          blk.call(resp)
+        end
+        connect.each_error_response do |resp|
+          blk.call(resp)
+        end
         connect.each_callback_response do |resp|
           route_response(resp)
        end

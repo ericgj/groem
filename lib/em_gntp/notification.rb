@@ -52,7 +52,7 @@ module EM_GNTP
     
     def to_register
       @to_register ||= \
-        %w{name display_name enabled icon}.inject({}) do |memo, attr|
+        %w{display_name enabled icon}.inject({}) do |memo, attr|
           if val = self.__send__(:"#{attr}")
             memo["Notification-#{growlify_key(attr)}"] = val
           end

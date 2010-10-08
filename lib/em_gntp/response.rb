@@ -38,22 +38,49 @@ module EM_GNTP
       [self.callback_result, self.context, self.context_type]
     end
     
-    def to_register? ; self.action == GNTP_REGISTER_METHOD; end
-    def to_notify? ; self.action == GNTP_NOTIFY_METHOD; end
-    
-    def ok? ; self.method == GNTP_OK_RESPONSE; end
-    def callback? ; self.method == GNTP_CALLBACK_RESPONSE; end
-    def error?(code=nil)
-      self.method == GNTP_ERROR_RESPONSE  && \
-        code.nil? || self.status == code
+    def to_register? &blk
+      yield_and_return_if self.action == GNTP_REGISTER_METHOD, &blk
     end
     
-    def clicked? ; self.callback_result == GNTP_CLICK_CALLBACK_RESULT; end
-    def closed? ; self.callback_result == GNTP_CLOSE_CALLBACK_RESULT; end
-    def timedout? ; self.callback_result == GNTP_TIMEDOUT_CALLBACK_RESULT; end
+    def to_notify? &blk
+      yield_and_return_if self.action == GNTP_NOTIFY_METHOD, &blk
+    end
+    
+    def ok? &blk
+      yield_and_return_if self.method == GNTP_OK_RESPONSE, &blk
+    end
+    
+    def callback? &blk
+      yield_and_return_if self.method == GNTP_CALLBACK_RESPONSE, &blk
+    end
+    
+    def error?(code=nil, &blk)
+      yield_and_return_if (self.method == GNTP_ERROR_RESPONSE  && \
+                           code.nil? || self.status == code), &blk
+    end
+    
+    def clicked? &blk
+      yield_and_return_if self.callback_result == GNTP_CLICK_CALLBACK_RESULT, &blk
+    end
+    
+    def closed? &blk
+      yield_and_return_if self.callback_result == GNTP_CLOSE_CALLBACK_RESULT, &blk
+    end
+    
+    def timedout? &blk
+      yield_and_return_if self.callback_result == GNTP_TIMEDOUT_CALLBACK_RESULT, &blk
+    end
+    
     alias_method :click?, :clicked?
     alias_method :close?, :closed?
     alias_method :timeout?, :timedout?
+    
+    protected
+    
+    def yield_and_return_if(cond)
+      yield if block_given? && cond
+      cond
+    end
     
   end
 end
