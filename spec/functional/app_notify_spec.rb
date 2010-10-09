@@ -24,10 +24,25 @@ describe 'EM_GNTP::App #notify without callbacks' do
       @subject.notify('hello') do |resp|
         count += 1
         resp[0].to_i.must_equal 0
+        resp[2].must_be_empty
         count.must_equal 1
       end
       
     end
+
+    it 'should return OK response from notify' do
+      
+      @subject.register do
+        notification 'hello' do end
+      end
+      
+      ret = @subject.notify('hello')
+      ret.class.must_be_same_as EM_GNTP::Response
+      ret[0].to_i.must_equal 0
+      ret[2].must_be_empty
+      
+    end
+
   end
  
   describe 'when notification hasnt been specified' do
@@ -175,6 +190,21 @@ module AppNotifyCallbacksHelper
     end
     
   end
+
+  
+  def should_return_ok_response(app)
+
+    app.register do
+      notification 'Foo' do |n|
+        n.callback 'You', :type => 'shiny'
+      end
+    end
+  
+    ret = app.notify('Foo')
+    ret.class.must_be_same_as EM_GNTP::Response
+    ret[0].to_i.must_equal 0
+    ret[2].must_be_empty
+  end
   
   
 end
@@ -217,6 +247,10 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
                                      :close => 'CLOSED', 
                                      :timedout => 'TIMEOUT')
     end
+
+    it 'should return ok response' do
+      should_return_ok_response(@subject)
+    end
     
   end
   
@@ -249,6 +283,10 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
                                      :click => 'CLICKED', 
                                      :close => 'CLOSED', 
                                      :timedout => 'TIMEOUT')
+    end
+
+    it 'should return ok response' do
+      should_return_ok_response(@subject)
     end
 
   end
@@ -284,6 +322,10 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
                                      :timedout => 'TIMEOUT')
     end
 
+    it 'should return ok response' do
+      should_return_ok_response(@subject)
+    end
+    
   end
   
 end

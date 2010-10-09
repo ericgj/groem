@@ -125,6 +125,7 @@ module EM_GNTP
     def send_register
       EM_GNTP::Client.response_class = EM_GNTP::Response
       stop_after = !(EM.reactor_running?)
+      ret = nil
       EM.run {
         connect = EM_GNTP::Client.register(self, host, port)
         connect.callback do |resp| 
@@ -132,33 +133,40 @@ module EM_GNTP
         end
         connect.errback  do |resp| 
           register_errback.call(resp) if register_errback
+          ret = resp
           EM.stop if stop_after
         end
         connect.when_ok do |resp| 
           register_callback.call(resp) if register_callback
+          ret = resp
         end
       }
+      ret
     end
     
     def send_notify(notif, &blk)
       EM_GNTP::Client.response_class = EM_GNTP::Response
       stop_after = !(EM.reactor_running?)
+      ret = nil
       EM.run {
         connect = EM_GNTP::Client.notify(notif, host, port)
         connect.callback do |resp| 
           EM.stop if stop_after
         end
         connect.errback do |resp| 
-          blk.call(resp)
+          yield(resp) if block_given?
+          ret = resp
           EM.stop if stop_after
         end
         connect.when_ok do |resp|
-          blk.call(resp)
+          yield(resp) if block_given?
+          ret = resp
         end
         connect.when_callback do |resp|
           route_response(resp)
        end
       }
+      ret
     end
     
     def notifications_to_register

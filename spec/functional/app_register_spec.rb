@@ -34,6 +34,17 @@ describe 'EM_GNTP::App #register' do
     
     end
     
+    it 'should return OK response' do
+      ret = \
+        @subject.register do
+          notification 'hello' do end
+        end
+        
+      ret.class.must_be_same_as EM_GNTP::Response
+      ret[0].to_i.must_equal 0
+      ret[2].must_be_empty
+    end
+    
   end
   
   describe 'with three notifications, server responds OK' do
@@ -75,6 +86,26 @@ describe 'EM_GNTP::App #register' do
         end
       end
     
+    end
+    
+    it 'should return OK response' do
+      ret = \
+      @subject.register do
+        notification 'hello' do end
+        notification 'goodbye' do |n|
+          n.text = 'farewell lovey'
+          n.sticky = 'True'
+          n.title = 'Bon Voyage'
+        end
+        notification 'wait' do |n|
+          n.callback 'default', :type => 'confirm'
+          n.header 'x_something_else', 'tomorrow'
+        end
+      end
+        
+      ret.class.must_be_same_as EM_GNTP::Response
+      ret[0].to_i.must_equal 0
+      ret[2].must_be_empty
     end
     
   end

@@ -63,6 +63,5 @@
     app.when_timedout do |response|  
       # do something with any timeout response regardless of context or type
     end
-      
-    end
+
     
