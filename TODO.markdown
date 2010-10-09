@@ -3,10 +3,11 @@
 DONE 1. Refactor routing to use separate parts instead of "/"
 DONE 2. Allow CLOSE|CLOSED, CLICK|CLICKED, TIMEOUT|TIMEDOUT or symbols
 DONE 3. Refactor response array - 3rd element should be hash with all Notification-Callback- headers in it
-4. Add integration tests for App notify with callbacks
-5. Clean up constants; take out GNTP_
+DONE 4. Add integration tests for App notify with callbacks
+DONE 4. Clean up callbacks?
+DONE 5. Clean up constants?
 6. Rename EM_GNTP to Groem?
-7. Take out debugging lines from Client
+DONE 7. Take out debugging lines from Client
 8. Gem release ??
 
 

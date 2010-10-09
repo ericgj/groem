@@ -59,17 +59,26 @@ module EM_GNTP
       self.class.response_class
     end
     
-    def each_ok_response(&blk)
-      @cb_each_response = blk
+    def when_ok(&blk)
+      @cb_response = blk
     end
     
-    def each_callback_response(&blk)
-      @cb_each_callback = blk
+    def when_callback(&blk)
+      @cb_callback = blk
     end
     
-    def each_error_response(&blk)
-      @cb_each_errback = blk
-    end
+# deprecated    
+#    def each_ok_response(&blk)
+#      @cb_each_response = blk
+#    end
+#    
+#    def each_callback_response(&blk)
+#      @cb_each_callback = blk
+#    end
+#    
+#    def each_error_response(&blk)
+#      @cb_each_errback = blk
+#    end
     
     def initialize(req)
       super
@@ -111,20 +120,20 @@ module EM_GNTP
     def receive_message(message)
       raw = response_class.load(message, nil)
       update_state_from_response!(raw)
-      puts "Client received message, state = #{@state}"
+      #puts "Client received message, state = #{@state}"
       resp = response_class.new(raw)
       case @state
       when :ok
-        @cb_each_response.call(resp) if @cb_each_response
+        @cb_response.call(resp) if @cb_response
         self.succeed(resp) unless waiting_for_callback?
       when :callback
-        @cb_each_callback.call(resp) if @cb_each_callback
+        @cb_callback.call(resp) if @cb_callback
         self.succeed(resp)
       when :error, :unknown
-        @cb_each_errback.call(resp) if @cb_each_errback
+        #@cb_response.call(resp) if @cb_response
         self.fail(resp)
       end
-      puts "Waiting for callback? #{waiting_for_callback? ? 'yes' : 'no'}"
+      #puts "Waiting for callback? #{waiting_for_callback? ? 'yes' : 'no'}"
       close_connection_after_writing unless waiting_for_callback?
     end
       

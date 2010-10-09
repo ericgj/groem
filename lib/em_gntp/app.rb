@@ -127,13 +127,15 @@ module EM_GNTP
       stop_after = !(EM.reactor_running?)
       EM.run {
         connect = EM_GNTP::Client.register(self, host, port)
-        connect.callback { |resp| EM.stop if stop_after }
-        connect.errback  { |resp| EM.stop if stop_after }
-        connect.each_ok_response do |resp| 
-          register_callback.call(resp) if register_callback
+        connect.callback do |resp| 
+          EM.stop if stop_after
         end
-        connect.each_error_response do |resp| 
+        connect.errback  do |resp| 
           register_errback.call(resp) if register_errback
+          EM.stop if stop_after
+        end
+        connect.when_ok do |resp| 
+          register_callback.call(resp) if register_callback
         end
       }
     end
@@ -143,15 +145,17 @@ module EM_GNTP
       stop_after = !(EM.reactor_running?)
       EM.run {
         connect = EM_GNTP::Client.notify(notif, host, port)
-        connect.callback { |resp| EM.stop if stop_after }
-        connect.errback  { |resp| EM.stop if stop_after }
-        connect.each_ok_response do |resp|
+        connect.callback do |resp| 
+          EM.stop if stop_after
+        end
+        connect.errback do |resp| 
+          blk.call(resp)
+          EM.stop if stop_after
+        end
+        connect.when_ok do |resp|
           blk.call(resp)
         end
-        connect.each_error_response do |resp|
-          blk.call(resp)
-        end
-        connect.each_callback_response do |resp|
+        connect.when_callback do |resp|
           route_response(resp)
        end
       }

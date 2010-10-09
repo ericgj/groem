@@ -64,9 +64,8 @@ describe 'EM_GNTP::App #[]' do
     it 'should set the notifications hash with basic info for register' do
       @subject = EM_GNTP::App.new('thing')
       @subject.notification 'action' do end
-      @subject['notifications'].must_equal(
-        {'action' => {'Notification-Name' => 'action'} }
-      )
+      @subject['notifications'].keys.must_include 'action'
+      @subject['notifications']['action'].must_be_empty
     end
         
   end

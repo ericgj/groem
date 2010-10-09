@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
 # Tests against a real Growl server running locally
+# Testing Client
 
 module NotifyTestHelper
 
@@ -57,12 +58,12 @@ module NotifyTestHelper
     EM.run {
 
       connect = EM_GNTP::Client.notify(req, 'localhost', 23053)
-      connect.callback do |resp|
+      connect.when_ok do |resp|
         count += 1
         puts "Response received back:\n#{resp.inspect}"
         resp[0].to_i.must_equal 0
       end
-      connect.each_callback_response do |resp|
+      connect.when_callback do |resp|
         count += 1
         resp[2].wont_be_empty
         puts "Callback response received back:\n#{resp.inspect}"
@@ -74,6 +75,7 @@ module NotifyTestHelper
         flunk "Expected successful NOTIFY response (0), received failure (#{resp[0]})"
         EM.stop
       end
+      connect.callback { |resp| EM.stop }
       
     }
     count.must_equal 2
@@ -134,7 +136,7 @@ Notification-Callback-Context-Type: Type
 end
 
 
-# TODO: integration tests using App interface
+# Testing App
 
 describe 'Registering an App with Growl' do
 
