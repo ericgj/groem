@@ -95,4 +95,39 @@ describe 'Sending a REGISTER request to Growl' do
   
 end
 
-# TODO: integration tests using App interface
+# Testing App
+
+describe 'Registering an App with Growl' do
+
+  before do
+    @app = EM_GNTP::App.new('Apster')
+  end
+  
+  it 'should send and receive one response successfully' do
+    count = 0
+    @app.when_register do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      count += 1
+      resp[0].to_i.must_equal 0
+    end
+    
+    @app.when_register_failed do |resp|
+      puts "Response received back:\n#{resp.inspect}"
+      flunk 'Expected OK response, got error connecting or ERROR response'
+    end
+      
+    @app.register do
+      header 'X-Something', 'Foo'
+      notification :starting, :enabled => 'False', :text => "Starting..."
+      notification :finished do |n|
+        n.enabled = 'True'
+        n.text = 'Finished!'
+        n.callback :finished, :type => 'Boolean'
+      end
+    end
+    
+    count.must_equal 1
+  end
+  
+  
+end

@@ -9,7 +9,7 @@
     app = GNTP::App.new('MyApp', :host => 'localhost')
     
     app.register do
-      icon 'http://www.example.com'
+      icon 'http://www.example.com/icon.png'
       header 'X-Custom-Header', 'default value'
 
       # notification with callback expected
@@ -28,28 +28,28 @@
 - **Notification**
     
     #  trigger notify and callbacks
-    response =  app.notify(:started, 'XYZ has started!')
+    app.notify(:started, 'XYZ has started!')
     
-    #  trigger notify and handle synchronous responses
+    # trigger notify with 'ad-hoc' callback
+    # -- with different settings than defined in app.register
+    app.notify(:finished, 'ABC has finished!', 
+               :callback => {:type => 'ad-hoc', 
+                             :target => 'www.my-callback-url.com'}
+              )
+              
+    #  trigger notify and handle responses
     app.notify(:finished, 'ABC has finished!') do |response|
       response.ok? { # handle OK response }
       response.error?  { # handle any ERROR response }
       response.error?(400) { # handle ERROR 400 (not authorized) response }
     end
 
-    # you could also do this simply
+    # you could also do this outside of the block
     response = app.notify(:finished, 'ABC has finished!') 
     response.ok? { # handle OK response }
     response.error?  { # handle any ERROR response }
     response.error?(400) { # handle ERROR 400 (not authorized) response }
     
-    
-    # trigger notify with 'ad-hoc' callback
-    # (not defined in app.register)
-    app.notify(:finished, 'ABC has finished!', 
-               :callback => {:type => 'ad-hoc', 
-                             :target => 'www.my-callback-url.com'}
-              )
     
 - **Callbacks**
 

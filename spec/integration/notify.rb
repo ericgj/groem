@@ -80,6 +80,29 @@ module NotifyTestHelper
     }
     count.must_equal 2
   end
+
+  def should_send_and_receive_only_callback_successfully(req)
+    count = 0
+    EM.run {
+
+      connect = EM_GNTP::Client.notify(req, 'localhost', 23053)
+      connect.when_callback do |resp|
+        count += 1
+        resp[2].wont_be_empty
+        puts "Callback response received back:\n#{resp.inspect}"
+        puts "Does this action match what you did? #{resp[2]['Notification-Callback-Result']}"
+        EM.stop
+      end
+      connect.errback do |resp|
+        puts "Response received back:\n#{resp.inspect}"
+        flunk "Expected successful NOTIFY response (0), received failure (#{resp[0]})"
+        EM.stop
+      end
+      connect.callback { |resp| EM.stop }
+      
+    }
+    count.must_equal 1
+  end
   
 end
 
@@ -129,6 +152,12 @@ Notification-Callback-Context-Type: Type
       puts "Sending request:\n#{@input_req.inspect}"
       should_send_and_receive_response_and_callback_successfully(@input_req)
     end
+
+    it 'should send and receive only a callback successfully' do
+      register_app_with_notifications("Test Ruby App", "Test Callback")
+      puts "Sending request:\n#{@input_req.inspect}"
+      should_send_and_receive_only_callback_successfully(@input_req)
+    end
     
   end
   
@@ -137,42 +166,6 @@ end
 
 
 # Testing App
-
-describe 'Registering an App with Growl' do
-
-  before do
-    @app = EM_GNTP::App.new('Apster')
-  end
-  
-  it 'should send and receive one response successfully' do
-    count = 0
-    @app.when_register do |resp|
-      puts "Response received back:\n#{resp.inspect}"
-      count += 1
-      resp[0].to_i.must_equal 0
-    end
-    
-    @app.when_register_failed do |resp|
-      puts "Response received back:\n#{resp.inspect}"
-      flunk 'Expected OK response, got error connecting or ERROR response'
-    end
-      
-    @app.register do
-      header 'X-Something', 'Foo'
-      notification :starting, :enabled => 'False', :text => "Starting..."
-      notification :finished do |n|
-        n.enabled = 'True'
-        n.text = 'Finished!'
-        n.callback :finished, :type => 'Boolean'
-      end
-    end
-    
-    count.must_equal 1
-  end
-  
-  
-end
-
 
 describe 'Sending a non-callback notification from an App' do
 
@@ -277,5 +270,49 @@ describe 'Sending a callback notification from an App' do
     notify_count.must_equal 1
     callback_count.must_equal 1
   end
+
+  it 'should send and receive ad-hoc callback successfully' do
+    callback_count = 0
+    
+    @app.register do
+      header 'X-Something', 'Foo'
+      notification :starting, :enabled => 'True', :text => "Starting..."
+      notification :finished do |n|
+        n.enabled = 'True'
+        n.text = 'Finished!'
+        n.callback :finished, :type => 'Boolean'
+      end
+    end
+    
+    @app.when_click :starting do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      resp.context.must_equal 'XYZ'
+      resp.context_type.must_equal 'starting'
+      callback_count += 1
+    end
+    
+    @app.when_close :starting do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      resp.context.must_equal 'XYZ'
+      resp.context_type.must_equal 'starting'
+      callback_count += 1
+    end
+    
+    @app.when_timedout :starting do |resp|
+      puts "Callback received back:\n#{resp.inspect}"
+      resp.context.must_equal 'XYZ'
+      resp.context_type.must_equal 'starting'
+      callback_count += 1
+    end
+    
+    @app.notify(:starting, 'XYZ is starting', 
+                :callback => {:context => 'XYZ'})
+    
+    callback_count.must_equal 1
+    @app.notifications[:starting].callback_context.must_be_nil 
+    @app.notifications[:starting].callback_type.must_be_nil 
+  end
   
 end
+
+
