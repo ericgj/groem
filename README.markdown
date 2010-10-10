@@ -1,4 +1,4 @@
-## em-gntp
+## Groem
 ### An Eventmachine-based 
 ### Growl Notification Transport Protocol (GNTP) client 
 

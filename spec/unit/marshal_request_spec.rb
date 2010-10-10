@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Marshal::Request.load' do
+describe 'Groem::Marshal::Request.load' do
 
   #------ REGISTER requests --------#
   
@@ -23,7 +23,7 @@ X-Language : English
 
 
 __________
-      dummy = Class.new { include(EM_GNTP::Marshal::Request) }
+      dummy = Class.new { include(Groem::Marshal::Request) }
       @subject = dummy.load(@input, false)
     end
     
@@ -111,7 +111,7 @@ Notification-Enabled: True
 X-Language: Spanish 
 
 __________
-      dummy = Class.new { include(EM_GNTP::Marshal::Request) }
+      dummy = Class.new { include(Groem::Marshal::Request) }
       @subject = dummy.load(@input, false)
     end
     
@@ -191,7 +191,7 @@ Notification-Title:XYZ finished downloading
 Notification-Icon : http://www.whatever.com/poo.jpg
 
 __________
-      dummy = Class.new { include(EM_GNTP::Marshal::Request) }
+      dummy = Class.new { include(Groem::Marshal::Request) }
       @subject = dummy.load(@input, false)
     end
 
@@ -250,7 +250,7 @@ end
 #---------- dump -----------#
   
 
-describe 'EM_GNTP::Marshal::Request#dump' do
+describe 'Groem::Marshal::Request#dump' do
   
   describe 'when valid REGISTER request with one notification, no binaries' do
     
@@ -278,7 +278,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     it 'should output a string' do
       @subject.class.must_be_same_as String
       puts
-      puts '------------EM_GNTP::Marshal::Request#dump when valid REGISTER request with one notification, no binaries ------------'
+      puts '------------Groem::Marshal::Request#dump when valid REGISTER request with one notification, no binaries ------------'
       puts @subject
     end
     
@@ -330,7 +330,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     it 'should output a string' do
       @subject.class.must_be_same_as String
       puts
-      puts '------------EM_GNTP::Marshal::Request#dump when valid NOTIFY request with one notification, no binaries ------------'
+      puts '------------Groem::Marshal::Request#dump when valid NOTIFY request with one notification, no binaries ------------'
       puts @subject
     end
     
@@ -362,7 +362,7 @@ describe 'EM_GNTP::Marshal::Request#dump' do
     it 'should output a string' do
       @subject.class.must_be_same_as String
       puts
-      puts '------------EM_GNTP::Marshal::Request#dump when no environment ------------'
+      puts '------------Groem::Marshal::Request#dump when no environment ------------'
       puts @subject
     end
     

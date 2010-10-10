@@ -1,9 +1,9 @@
 require 'eventmachine'
 
-module EM_GNTP
+module Groem
   module Dummy
     class Server < EM::Connection
-      include EM_GNTP::Constants
+      include Groem::Constants
       
       DEFAULT_HOST = 'localhost'
       DEFAULT_PORT = 23052    # note one off to avoid port conflict
@@ -93,7 +93,7 @@ module EM_GNTP
       
       def receive_message message
         puts "SERVER: Received message"
-        klass = Class.new { include EM_GNTP::Marshal::Request }
+        klass = Class.new { include Groem::Marshal::Request }
         raw = klass.load(message, false)
         #puts "Parsed message:\n#{raw.inspect}"
         prepare_responses_for(raw)

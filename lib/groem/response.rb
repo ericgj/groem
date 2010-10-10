@@ -1,6 +1,6 @@
 require 'forwardable'
 
-module EM_GNTP
+module Groem
   class Response < Struct.new(:status,
                               :method,
                               :action,
@@ -9,7 +9,7 @@ module EM_GNTP
                               :context_type,
                               :callback_result,
                               :headers)
-    include EM_GNTP::Marshal::Response
+    include Groem::Marshal::Response
     extend Forwardable
     
     def_delegator :@raw, :[]

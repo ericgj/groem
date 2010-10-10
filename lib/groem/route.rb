@@ -1,5 +1,5 @@
 
-module EM_GNTP
+module Groem
   class Route
 
     class << self

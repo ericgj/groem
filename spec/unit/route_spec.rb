@@ -1,90 +1,90 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Route.parse' do
+describe 'Groem::Route.parse' do
 
   it 'should parse nil path' do 
-    @subject = EM_GNTP::Route.parse 'action', nil
+    @subject = Groem::Route.parse 'action', nil
     @subject.must_equal ['action', nil, nil]
   end
 
   it 'should parse empty path' do 
-    @subject = EM_GNTP::Route.parse 'action', ''
+    @subject = Groem::Route.parse 'action', ''
     @subject.must_equal ['action', '', nil]
   end
   
   it 'should parse action and path' do
-    @subject = EM_GNTP::Route.parse 'action', 'context', 'type'
+    @subject = Groem::Route.parse 'action', 'context', 'type'
     @subject.must_equal ['action', 'context', 'type']
   end
   
   it 'should parse path with less than 2 parts' do
-    @subject = EM_GNTP::Route.parse 'action', 'context'
+    @subject = Groem::Route.parse 'action', 'context'
     @subject.must_equal ['action', 'context', nil]
   end
   
   it 'should parse path with greater than 2 parts' do
-    @subject = EM_GNTP::Route.parse 'action', 'context', 'type', 'extra'
+    @subject = Groem::Route.parse 'action', 'context', 'type', 'extra'
     @subject.must_equal ['action', 'context', 'type']
   end
   
 end
 
-describe 'EM_GNTP::Route#parse' do
+describe 'Groem::Route#parse' do
 
   it 'should parse nil path' do 
-    @subject = EM_GNTP::Route.new('action')
+    @subject = Groem::Route.new('action')
     @subject.pattern.must_equal ['action', nil, nil]
   end
 
   it 'should parse splatted path' do 
-    @subject = EM_GNTP::Route.new('action', 'context', 'type')
+    @subject = Groem::Route.new('action', 'context', 'type')
     @subject.pattern.must_equal ['action', 'context', 'type']
   end
 
   it 'should parse array path' do 
-    @subject = EM_GNTP::Route.new('action', ['context', 'type'])
+    @subject = Groem::Route.new('action', ['context', 'type'])
     @subject.pattern.must_equal ['action', 'context', 'type']
   end
   
 end
 
 
-describe 'EM_GNTP::Route.matches?' do
+describe 'Groem::Route.matches?' do
 
   it 'should match identical pattern' do 
     @pattern = ['action', 'context', 'type']
-    EM_GNTP::Route.matches?(@pattern, ['action', 'context', 'type'])
+    Groem::Route.matches?(@pattern, ['action', 'context', 'type'])
   end
 
   it 'should match nil part of pattern' do 
     @pattern = ['action', nil, 'type']
-    EM_GNTP::Route.matches?(@pattern, ['action', 'context', 'type'])
+    Groem::Route.matches?(@pattern, ['action', 'context', 'type'])
   end
 
   it 'should match multiple nil parts of pattern' do 
     @pattern = [nil, nil, 'type']
-    EM_GNTP::Route.matches?(@pattern, ['action', 'context', 'type'])
+    Groem::Route.matches?(@pattern, ['action', 'context', 'type'])
   end
     
 end
 
-describe 'EM_GNTP::Route#<=>' do
+describe 'Groem::Route#<=>' do
 
   it 'should sort by standard array sort if no nil parts in pattern' do
-    subject = [ s1 = EM_GNTP::Route.new('action', 'c','d'),
-                s2 = EM_GNTP::Route.new('bacon', 'b','c'),
-                s3 = EM_GNTP::Route.new('action', 'b','c')
+    subject = [ s1 = Groem::Route.new('action', 'c','d'),
+                s2 = Groem::Route.new('bacon', 'b','c'),
+                s3 = Groem::Route.new('action', 'b','c')
               ]
     subject.sort.must_equal [s3, s1, s2]
   end
   
   it 'should sort nil parts after non-nil parts in pattern' do
-    subject = [ s1 = EM_GNTP::Route.new('action', 'c','d'),
-                s2 = EM_GNTP::Route.new('bacon', 'b','c'),
-                s3 = EM_GNTP::Route.new('action', 'b','c'),
-                s4 = EM_GNTP::Route.new('action', nil,'c'),
-                s5 = EM_GNTP::Route.new('action', nil,'b'),
-                s6 = EM_GNTP::Route.new('action', 'c',nil)
+    subject = [ s1 = Groem::Route.new('action', 'c','d'),
+                s2 = Groem::Route.new('bacon', 'b','c'),
+                s3 = Groem::Route.new('action', 'b','c'),
+                s4 = Groem::Route.new('action', nil,'c'),
+                s5 = Groem::Route.new('action', nil,'b'),
+                s6 = Groem::Route.new('action', 'c',nil)
               ]
     subject.sort.must_equal [s3, s1, s6, s5, s4, s2]
   end

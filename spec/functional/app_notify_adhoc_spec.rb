@@ -1,11 +1,11 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::App #notify with ad-hoc callback' do
+describe 'Groem::App #notify with ad-hoc callback' do
 
   before do
     @p_svr = DummyServerHelper.fork_server(:callback => ['CLICK', 2])
-    EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-    @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+    Groem::Client.response_class = MarshalHelper.dummy_response_class
+    @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
   end
   
   after do

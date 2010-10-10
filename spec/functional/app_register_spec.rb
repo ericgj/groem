@@ -1,13 +1,13 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::App #register' do
+describe 'Groem::App #register' do
 
   describe 'with one notification, server responds OK' do
   
     before do
       @p_svr = DummyServerHelper.fork_server(:register => '-OK')
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test',:port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test',:port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -40,7 +40,7 @@ describe 'EM_GNTP::App #register' do
           notification 'hello' do end
         end
         
-      ret.class.must_be_same_as EM_GNTP::Response
+      ret.class.must_be_same_as Groem::Response
       ret[0].to_i.must_equal 0
       ret[2].must_be_empty
     end
@@ -51,8 +51,8 @@ describe 'EM_GNTP::App #register' do
   
     before do
       @p_svr = DummyServerHelper.fork_server(:register => '-OK')
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test',:port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test',:port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -103,7 +103,7 @@ describe 'EM_GNTP::App #register' do
         end
       end
         
-      ret.class.must_be_same_as EM_GNTP::Response
+      ret.class.must_be_same_as Groem::Response
       ret[0].to_i.must_equal 0
       ret[2].must_be_empty
     end

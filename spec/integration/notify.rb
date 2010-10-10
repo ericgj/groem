@@ -15,7 +15,7 @@ module NotifyTestHelper
     raw = lines.join("\r\n") + "\r\n"
     req = load_request(raw)
     EM.run {
-      connect = EM_GNTP::Client.register(req, 'localhost', 23053)
+      connect = Groem::Client.register(req, 'localhost', 23053)
       connect.callback do |resp|
         puts "Note: REGISTER successful"
         EM.stop
@@ -28,7 +28,7 @@ module NotifyTestHelper
   end
   
   def load_request(str)
-    klass = EM_GNTP::Client.anonymous_request_class
+    klass = Groem::Client.anonymous_request_class
     klass.load(str)
   end
   
@@ -36,7 +36,7 @@ module NotifyTestHelper
     count = 0
     EM.run {
 
-      connect = EM_GNTP::Client.notify(req, 'localhost', 23053)
+      connect = Groem::Client.notify(req, 'localhost', 23053)
       connect.callback do |resp|
         count += 1
         puts "Response received back:\n#{resp.inspect}"
@@ -57,7 +57,7 @@ module NotifyTestHelper
     count = 0
     EM.run {
 
-      connect = EM_GNTP::Client.notify(req, 'localhost', 23053)
+      connect = Groem::Client.notify(req, 'localhost', 23053)
       connect.when_ok do |resp|
         count += 1
         puts "Response received back:\n#{resp.inspect}"
@@ -85,7 +85,7 @@ module NotifyTestHelper
     count = 0
     EM.run {
 
-      connect = EM_GNTP::Client.notify(req, 'localhost', 23053)
+      connect = Groem::Client.notify(req, 'localhost', 23053)
       connect.when_callback do |resp|
         count += 1
         resp[2].wont_be_empty
@@ -170,7 +170,7 @@ end
 describe 'Sending a non-callback notification from an App' do
 
   before do
-    @app = EM_GNTP::App.new('Rapster')
+    @app = Groem::App.new('Rapster')
   end
   
   it 'should send and receive register and notify response successfully' do
@@ -216,7 +216,7 @@ end
 describe 'Sending a callback notification from an App' do
 
   before do
-    @app = EM_GNTP::App.new('Sapster')
+    @app = Groem::App.new('Sapster')
   end
   
   it 'should send and receive register and notify response successfully' do

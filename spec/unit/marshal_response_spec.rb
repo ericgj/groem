@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Marshal::Response.load' do
+describe 'Groem::Marshal::Response.load' do
   
   
   describe 'when valid REGISTER response -OK' do
@@ -21,7 +21,7 @@ Application-Name: SurfWriter
  Notification-ID : 999
 
 __________
-      dummy = Class.new { include(EM_GNTP::Marshal::Response) }
+      dummy = Class.new { include(Groem::Marshal::Response) }
       @subject = dummy.load(@input, false)
     end
 
@@ -29,7 +29,7 @@ __________
       @subject.must_be_kind_of Array
       @subject.size.must_equal 3
       puts
-      puts '--------- EM_GNTP::Marshal::Response.load when valid NOTIFY response -OK ----------'
+      puts '--------- Groem::Marshal::Response.load when valid NOTIFY response -OK ----------'
       puts @subject.inspect
     end
     
@@ -61,7 +61,7 @@ Error-Description : REQUIRED_HEADER_MISSING
 Response-Action: NOTIFY
 
 __________
-      dummy = Class.new { include(EM_GNTP::Marshal::Response) }
+      dummy = Class.new { include(Groem::Marshal::Response) }
       @subject = dummy.load(@input, false)
     end
 
@@ -69,7 +69,7 @@ __________
       @subject.must_be_kind_of Array
       @subject.size.must_equal 3
       puts
-      puts '--------- EM_GNTP::Marshal::Response.load when valid NOTIFY response -ERROR ----------'
+      puts '--------- Groem::Marshal::Response.load when valid NOTIFY response -ERROR ----------'
       puts @subject.inspect
     end
     
@@ -108,7 +108,7 @@ __________
 "Notification-Callback-Context :Test",
 "Notification-Callback-Context-Type: Confirm"
 ].join("\r\n") + "\r\n"
-      dummy = Class.new { include(EM_GNTP::Marshal::Response) }
+      dummy = Class.new { include(Groem::Marshal::Response) }
       @subject = dummy.load(@input, false)
     end
   
@@ -116,7 +116,7 @@ __________
       @subject.must_be_kind_of Array
       @subject.size.must_equal 3
       puts
-      puts '--------- EM_GNTP::Marshal::Response.load when valid NOTIFY response -CALLBACK ----------'
+      puts '--------- Groem::Marshal::Response.load when valid NOTIFY response -CALLBACK ----------'
       puts @subject.inspect
     end
     

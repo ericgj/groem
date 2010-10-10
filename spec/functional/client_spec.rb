@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Client' do
+describe 'Groem::Client' do
 
   describe 'REGISTER request, handle OK response' do
   
@@ -27,7 +27,7 @@ describe 'EM_GNTP::Client' do
       @input = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, @input_notifs)
       
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
       
     end
 
@@ -41,7 +41,7 @@ describe 'EM_GNTP::Client' do
       callback_count = 0
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = Groem::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -98,7 +98,7 @@ describe 'EM_GNTP::Client' do
       @input = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, @input_notifs)
       
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
       
     end
 
@@ -112,7 +112,7 @@ describe 'EM_GNTP::Client' do
       callback_count = 0
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = Groem::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -172,7 +172,7 @@ describe 'EM_GNTP::Client' do
       @input = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, {})
       
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
       
       @ok_count = 0
       @error_count = 0
@@ -180,7 +180,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = Groem::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -246,7 +246,7 @@ describe 'EM_GNTP::Client' do
       @input = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, {})
       
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
       
       @ok_count = 0
       @error_count = 0
@@ -254,7 +254,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = Groem::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -318,14 +318,14 @@ describe 'EM_GNTP::Client' do
       @input = MarshalHelper.dummy_request(
                    @input_env, @input_hdrs, {})
       
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
       
       @error_count = 0
       @callback_count = 0
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = Groem::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.errback do |resp|
           puts "Client received error response"

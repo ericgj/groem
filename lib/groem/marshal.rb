@@ -1,10 +1,10 @@
 require 'strscan'
 
-module EM_GNTP
+module Groem
   
   module Marshal 
     module Request
-      include EM_GNTP::Constants
+      include Groem::Constants
       
       def self.included(mod)
         mod.extend ClassMethods
@@ -55,7 +55,7 @@ module EM_GNTP
         
            
       module ClassMethods
-        include EM_GNTP::Constants
+        include Groem::Constants
         
         #
         # Load GNTP request into hash of:
@@ -239,7 +239,7 @@ module EM_GNTP
   
   
     module Response
-      include EM_GNTP::Constants
+      include Groem::Constants
       
       def self.included(mod)
         mod.extend ClassMethods
@@ -253,7 +253,7 @@ module EM_GNTP
       end
       
       module ClassMethods
-        include EM_GNTP::Constants
+        include Groem::Constants
       
         # Load GNTP response into array of:
         #     status  (error code or '0' for OK) 

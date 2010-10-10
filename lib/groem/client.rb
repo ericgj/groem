@@ -1,8 +1,8 @@
 require 'eventmachine'
 
-module EM_GNTP
+module Groem
   class Client < EM::Connection
-    include EM_GNTP::Constants
+    include Groem::Constants
     include EM::Deferrable
 
     DEFAULT_HOST = 'localhost'
@@ -28,7 +28,7 @@ module EM_GNTP
       def anonymous_response_class
         @klass_resp ||= \
           Class.new { 
-            include(EM_GNTP::Marshal::Response) 
+            include(Groem::Marshal::Response) 
             require 'forwardable'
             extend Forwardable
             def_delegators :@raw, :[], :[]=
@@ -42,7 +42,7 @@ module EM_GNTP
       def anonymous_request_class
         @klass_req ||= \
           Class.new { 
-            include(EM_GNTP::Marshal::Request) 
+            include(Groem::Marshal::Request) 
             require 'forwardable'
             extend Forwardable
             def_delegators :@raw, :[], :[]=

@@ -3,7 +3,7 @@ module MarshalHelper
 
   def self.dummy_request_class
     Class.new { 
-      include(EM_GNTP::Marshal::Request) 
+      include(Groem::Marshal::Request) 
       require 'forwardable'
       extend Forwardable
       def_delegators :@raw, :[], :[]=
@@ -16,7 +16,7 @@ module MarshalHelper
   
   def self.dummy_response_class
     Class.new { 
-      include(EM_GNTP::Marshal::Response) 
+      include(Groem::Marshal::Response) 
       require 'forwardable'
       extend Forwardable
       def_delegators :@raw, :[], :[]=

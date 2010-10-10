@@ -1,26 +1,26 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
 
-describe 'EM_GNTP::Notification #[]' do
+describe 'Groem::Notification #[]' do
 
   describe 'after initializing' do
     it 'should set the notification_name header based on input' do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
       @subject['headers']['Notification-Name'].must_equal 'verb'
     end
  
     it 'should not set the notification_title header if none passed' do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
       @subject['headers'].keys.wont_include 'Notification-Title'
     end
   
     it 'should set the notification_title header based on input' do
-      @subject = EM_GNTP::Notification.new('verb', 'title')
+      @subject = Groem::Notification.new('verb', 'title')
       @subject['headers']['Notification-Title'].must_equal 'title'
     end
     
     it 'should default the environment when no options passed' do
-      @subject = EM_GNTP::Notification.new('verb')
-      @subject['environment'].must_equal EM_GNTP::Notification::DEFAULT_ENV
+      @subject = Groem::Notification.new('verb')
+      @subject['environment'].must_equal Groem::Notification::DEFAULT_ENV
     end
     
     it 'should merge keys from input environment option into default environment' do
@@ -28,8 +28,8 @@ describe 'EM_GNTP::Notification #[]' do
                 'request_method' => 'HELLO',
                 'encryption_id' => 'ABC'
                }
-      @subject = EM_GNTP::Notification.new('verb', {:environment => input})
-      @subject['environment'].must_equal EM_GNTP::Notification::DEFAULT_ENV.merge(input)
+      @subject = Groem::Notification.new('verb', {:environment => input})
+      @subject['environment'].must_equal Groem::Notification::DEFAULT_ENV.merge(input)
     end
     
     it 'should set each notify option in headers hash prefixed by \'notification_\', besides environment' do
@@ -38,7 +38,7 @@ describe 'EM_GNTP::Notification #[]' do
                :text => 'False', 
                :sticky => 'True'
               }
-      @subject = EM_GNTP::Notification.new('verb', opts)
+      @subject = Groem::Notification.new('verb', opts)
       @subject['headers']['Notification-Title'].must_equal 'what'
       @subject['headers']['Notification-Text'].must_equal 'False'
       @subject['headers']['Notification-Sticky'].must_equal 'True'
@@ -50,19 +50,19 @@ describe 'EM_GNTP::Notification #[]' do
       opts = {:environment => {}, 
                :application_name => 'Obama'
               }
-      @subject = EM_GNTP::Notification.new('verb', opts)
+      @subject = Groem::Notification.new('verb', opts)
       @subject['headers']['Application-Name'].must_equal 'Obama'
       @subject['headers'].keys.wont_include 'Notification-Application-Name'
     end
     
     it 'should set automatic notification_id in headers hash' do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
       @subject['headers'].keys.must_include 'Notification-ID'
     end
     
     it 'should set any unknown options in headers hash not prefixed by \'notification_\'' do
       opts = {:boo => 'bear', :sister_of_goldilocks => 'Reba'}
-      @subject = EM_GNTP::Notification.new('verb', opts)
+      @subject = Groem::Notification.new('verb', opts)
       @subject['headers']['Boo'].must_equal 'bear'
       @subject['headers']['Sister-Of-Goldilocks'].must_equal 'Reba'
       @subject['headers'].keys.wont_include 'Notification-Boo'
@@ -74,7 +74,7 @@ describe 'EM_GNTP::Notification #[]' do
   describe 'after setting header' do
   
     it 'should add the header to the headers hash based on input' do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
       @subject.header('x_header', 'boo')
       @subject['headers']['X-Header'].must_equal 'boo'
     end
@@ -84,7 +84,7 @@ describe 'EM_GNTP::Notification #[]' do
   describe 'after setting callback' do
   
     before do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
     end
     
     it 'should add the notification_callback_context header to the headers hash' do
@@ -113,7 +113,7 @@ describe 'EM_GNTP::Notification #[]' do
   describe 'after reset!' do
   
     it 'should not set the same notification_id' do
-      @subject = EM_GNTP::Notification.new('verb')
+      @subject = Groem::Notification.new('verb')
       id = @subject['headers']['Notification_ID']
       @subject.reset!
       @subject['headers']['Notification-ID'].wont_equal id
@@ -123,7 +123,7 @@ describe 'EM_GNTP::Notification #[]' do
     
 end
 
-describe 'EM_GNTP::Notification #dup' do
+describe 'Groem::Notification #dup' do
 
   before do
   
@@ -145,7 +145,7 @@ describe 'EM_GNTP::Notification #dup' do
     @headers = [['X-Header-Thing', 'Blackbeard'],
                 ['X-Another-Thing', 'Creamcicle']]
     
-    @input = EM_GNTP::Notification.new(@input_name, @input_title, @input_opts)
+    @input = Groem::Notification.new(@input_name, @input_title, @input_opts)
     @input.header @headers[0][0], @headers[0][1] 
     @input.header @headers[1][0], @headers[1][1]
     @input.callback

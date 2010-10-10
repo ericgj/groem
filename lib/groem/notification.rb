@@ -1,7 +1,7 @@
 require 'eventmachine'
 require 'uuidtools'
 
-module EM_GNTP
+module Groem
 
   class Notification < Struct.new(:environment,
                                   :application_name,
@@ -15,7 +15,7 @@ module EM_GNTP
                                   :coalescing_id,
                                   :headers
                                  )
-    include EM_GNTP::Marshal::Request
+    include Groem::Marshal::Request
     
     DEFAULT_ENV = {'protocol' => 'GNTP', 'version' => '1.0',
                    'request_method' => 'NOTIFY', 'encryption_id' => 'NONE'

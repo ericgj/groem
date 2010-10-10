@@ -1,4 +1,4 @@
-module EM_GNTP
+module Groem
   
   module Constants
 

@@ -1,13 +1,13 @@
 require File.join(File.dirname(__FILE__),'..','spec_helper')
  
-describe 'EM_GNTP::App #notify without callbacks' do
+describe 'Groem::App #notify without callbacks' do
 
   describe 'with one notification' do
   
     before do
       @p_svr = DummyServerHelper.fork_server(:notify => '-OK')
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -37,7 +37,7 @@ describe 'EM_GNTP::App #notify without callbacks' do
       end
       
       ret = @subject.notify('hello')
-      ret.class.must_be_same_as EM_GNTP::Response
+      ret.class.must_be_same_as Groem::Response
       ret[0].to_i.must_equal 0
       ret[2].must_be_empty
       
@@ -49,8 +49,8 @@ describe 'EM_GNTP::App #notify without callbacks' do
 
     before do
       @p_svr = DummyServerHelper.fork_server(:notify => '-OK')
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -201,7 +201,7 @@ module AppNotifyCallbacksHelper
     end
   
     ret = app.notify('Foo')
-    ret.class.must_be_same_as EM_GNTP::Response
+    ret.class.must_be_same_as Groem::Response
     ret[0].to_i.must_equal 0
     ret[2].must_be_empty
   end
@@ -210,7 +210,7 @@ module AppNotifyCallbacksHelper
 end
 
 
-describe 'EM_GNTP::App #notify with simple callbacks' do
+describe 'Groem::App #notify with simple callbacks' do
 
 
   describe 'when CLICK callback returned' do
@@ -218,8 +218,8 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
     
     before do
       @p_svr = DummyServerHelper.fork_server(:callback => ['CLICK', 2])
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -259,8 +259,8 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
     
     before do
       @p_svr = DummyServerHelper.fork_server(:callback => ['CLOSE', 2])
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -296,8 +296,8 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
     
     before do
       @p_svr = DummyServerHelper.fork_server(:callback => ['TIMEDOUT', 2])
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do
@@ -331,12 +331,12 @@ describe 'EM_GNTP::App #notify with simple callbacks' do
 end
 
 
-describe 'EM_GNTP::App #notify with routed callbacks' do
+describe 'Groem::App #notify with routed callbacks' do
 
     before do
       @p_svr = DummyServerHelper.fork_server(:callback => ['CLICK', 2])
-      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
-      @subject = EM_GNTP::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
+      Groem::Client.response_class = MarshalHelper.dummy_response_class
+      @subject = Groem::App.new('test', :port => DummyServerHelper::DEFAULT_PORT)
     end
     
     after do

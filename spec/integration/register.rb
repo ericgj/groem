@@ -5,7 +5,7 @@ require File.join(File.dirname(__FILE__),'..','spec_helper')
 module RegisterTestHelper
 
   def load_request(str)
-    klass = EM_GNTP::Client.anonymous_request_class
+    klass = Groem::Client.anonymous_request_class
     klass.load(str)
   end
   
@@ -13,7 +13,7 @@ module RegisterTestHelper
     count = 0
     EM.run {
 
-      connect = EM_GNTP::Client.register(req, 'localhost', 23053)
+      connect = Groem::Client.register(req, 'localhost', 23053)
       connect.callback do |resp|
         count += 1
         puts "Response received back:\n#{resp.inspect}"
@@ -100,7 +100,7 @@ end
 describe 'Registering an App with Growl' do
 
   before do
-    @app = EM_GNTP::App.new('Apster')
+    @app = Groem::App.new('Apster')
   end
   
   it 'should send and receive one response successfully' do

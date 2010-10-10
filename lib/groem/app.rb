@@ -1,10 +1,10 @@
 require 'eventmachine'
 
-module EM_GNTP
+module Groem
 
   class App < Struct.new(:host, :port, 
                          :environment, :headers, :notifications)
-    include EM_GNTP::Marshal::Request
+    include Groem::Marshal::Request
     
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 23053
@@ -51,7 +51,7 @@ module EM_GNTP
     end
     
     def notification(name, *args)
-      n = EM_GNTP::Notification.new(name, *args)
+      n = Groem::Notification.new(name, *args)
       yield(n) if block_given?
       n.application_name = self.name
       self.notifications[name] = n
@@ -110,7 +110,7 @@ module EM_GNTP
           [path[:context], path[:type]]
         end
       #puts "App defined callback: #{action} #{path.inspect}"      
-      notify_callbacks[EM_GNTP::Route.new(action, path)] = blk
+      notify_callbacks[Groem::Route.new(action, path)] = blk
     end
     
         
@@ -129,11 +129,11 @@ module EM_GNTP
     def notify_callbacks; @notify_callbacks ||= {}; end
 
     def send_register
-      EM_GNTP::Client.response_class = EM_GNTP::Response
+      Groem::Client.response_class = Groem::Response
       stop_after = !(EM.reactor_running?)
       ret = nil
       EM.run {
-        connect = EM_GNTP::Client.register(self, host, port)
+        connect = Groem::Client.register(self, host, port)
         connect.callback do |resp| 
           EM.stop if stop_after
         end
@@ -151,11 +151,11 @@ module EM_GNTP
     end
     
     def send_notify(notif, &blk)
-      EM_GNTP::Client.response_class = EM_GNTP::Response
+      Groem::Client.response_class = Groem::Response
       stop_after = !(EM.reactor_running?)
       ret = nil
       EM.run {
-        connect = EM_GNTP::Client.notify(notif, host, port)
+        connect = Groem::Client.notify(notif, host, port)
         connect.callback do |resp| 
           EM.stop if stop_after
         end
