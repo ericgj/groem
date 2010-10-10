@@ -2,6 +2,16 @@
 ### An Eventmachine-based 
 ### Growl Notification Transport Protocol (GNTP) client 
 
+For documentation of the GNTP protocol, see:
+    [http://www.growlforwindows.com/gfw/help/gntp.aspx](http://www.growlforwindows.com/gfw/help/gntp.aspx)
+
+Note this is very much beta.  The core functionality is fairly well tested, but the following features are not yet implemented:
+
+- Binary resources (`x-growl-resource://`) in requests, including for icons
+- Encryption
+- Subscribe requests
+
+
 #### Examples of usage:
 
 - **Registration**
@@ -70,3 +80,4 @@
     end
 
     
+#### Limitations:
