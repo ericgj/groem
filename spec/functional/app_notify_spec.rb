@@ -385,3 +385,6 @@ describe 'EM_GNTP::App #notify with routed callbacks' do
 
     
 end
+
+
+

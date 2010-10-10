@@ -83,24 +83,31 @@ describe 'EM_GNTP::Notification #[]' do
   
   describe 'after setting callback' do
   
-    it 'should add the notification_callback_context header to the headers hash' do
+    before do
       @subject = EM_GNTP::Notification.new('verb')
+    end
+    
+    it 'should add the notification_callback_context header to the headers hash' do
       @subject.callback 'success'
       @subject['headers']['Notification-Callback-Context'].must_equal 'success'
     end
   
     it 'should add the notification_callback_context_type header to the headers hash, when :type passed as an option' do
-      @subject = EM_GNTP::Notification.new('verb')
       @subject.callback 'success', :type => 'test'
       @subject['headers']['Notification-Callback-Context-Type'].must_equal 'test'
     end
 
     it 'should add the notification_callback_target header to the headers hash, when :target passed as an option' do
-      @subject = EM_GNTP::Notification.new('verb')
       @subject.callback 'success', :target => '10.10.0.2'
       @subject['headers']['Notification-Callback-Target'].must_equal '10.10.0.2'
     end
 
+    it 'should set the notification_callback_context and _type to the notification name, when no argments passed' do
+      @subject.callback
+      @subject['headers']['Notification-Callback-Context'].must_equal @subject.name
+      @subject['headers']['Notification-Callback-Context-Type'].must_equal @subject.name
+    end
+    
   end
   
   describe 'after reset!' do
@@ -112,6 +119,82 @@ describe 'EM_GNTP::Notification #[]' do
       @subject['headers']['Notification-ID'].wont_equal id
     end
     
+  end
+    
+end
+
+describe 'EM_GNTP::Notification #dup' do
+
+  before do
+  
+    @input_opts = { :environment => {'protocol' => 'GNTP', 
+                             'version' => '2.0',
+                             'request_method' => 'NOTIFY', 
+                             'encryption_id' => 'ABC'
+                            },
+              :application_name => 'Foo',
+              :display_name => 'Name here',
+              :enabled => 'True',
+              :text => 'Text here',
+              :sticky => 'False',
+              :priority => 'High',
+              :coalescing_id => '12345'
+            }
+    @input_name = 'verb'
+    @input_title = 'title'
+    @headers = [['X-Header-Thing', 'Blackbeard'],
+                ['X-Another-Thing', 'Creamcicle']]
+    
+    @input = EM_GNTP::Notification.new(@input_name, @input_title, @input_opts)
+    @input.header @headers[0][0], @headers[0][1] 
+    @input.header @headers[1][0], @headers[1][1]
+    @input.callback
+    @subject = @input.dup
+  end
+  
+  it 'should have equal name' do
+    @subject.name.must_equal @input.name
+  end
+  
+  it 'should have equal title' do
+    @subject.title.must_equal @input.title
+  end
+
+  it 'should have equal attributes' do
+    @input.each_pair do |k, v|
+      @subject.__send__(k).must_equal v
+    end
+  end
+  
+  it 'should have matching callback' do
+    %w{Notification-Callback-Context
+       Notification-Callback-Context-Type
+       Notification-Callback-Target}.each do |key|
+        @subject[key].must_equal @input[key]
+      end
+  end
+  
+  it 'should not have same name reference' do
+    @subject.name.wont_be_same_as @input.name
+  end
+  
+  it 'should not have same title reference' do
+    @subject.title.wont_be_same_as @input.title
+  end
+
+  it 'should not have same reference for each attribute' do
+    @input.each_pair do |k, v|
+      @subject.__send__(k).wont_be_same_as v
+    end
+  end
+  
+  it 'should not have matching callback after changing' do
+    @subject.callback 'ZZing', :type => 'Zam', :target => 'www.zombo.com'
+    %w{Notification-Callback-Context
+       Notification-Callback-Context-Type
+       Notification-Callback-Target}.each do |key|
+        @subject['headers'][key].wont_equal @input['headers'][key]
+      end    
   end
   
 end

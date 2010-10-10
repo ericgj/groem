@@ -13,7 +13,6 @@
       header 'X-Custom-Header', 'default value'
 
       # notification with callback expected
-      
       notification :started, 'Your thing has started!' do |n|
         n.header 'Data-Filename'
         n.icon 'path/to/local/file.png'   #=> generates x-growl-resource
@@ -22,7 +21,6 @@
       end
       
       # notification with no callback
-      
       notification :finished, :enabled => true
       
     end
@@ -45,7 +43,14 @@
     response.error?  { # handle any ERROR response }
     response.error?(400) { # handle ERROR 400 (not authorized) response }
     
-        
+    
+    # trigger notify with 'ad-hoc' callback
+    # (not defined in app.register)
+    app.notify(:finished, 'ABC has finished!', 
+               :callback => {:type => 'ad-hoc', 
+                             :target => 'www.my-callback-url.com'}
+              )
+    
 - **Callbacks**
 
     app.when_close 'process' do |response|

@@ -8,12 +8,12 @@ module EM_GNTP
                                   :name,
                                   :display_name,
                                   :enabled,
-                                  :icon,
                                   :title,
                                   :text,
                                   :sticky,
                                   :priority,
-                                  :coalescing_id
+                                  :coalescing_id,
+                                  :headers
                                  )
     include EM_GNTP::Marshal::Request
     
@@ -24,7 +24,7 @@ module EM_GNTP
     def initialize(name, *args)
       opts = args.last.is_a?(Hash) ? args.pop : {}
       title = args.shift
-      self.environment, @headers, @callback = {}, {}, {}
+      self.environment, self.headers, @callback = {}, {}, {}
       self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
       self.name = name; self.title = title
       opts.each_pair do |opt, val| 
@@ -41,8 +41,15 @@ module EM_GNTP
       to_request[key]
     end
     
+    def dup
+      attrs = {}; self.each_pair {|k, v| attrs[k] = v.dup if v}
+      ret = self.class.new(self.name, attrs)
+      ret.callback(@callback) if @callback
+      ret
+    end
+    
     def reset!
-      @to_register, @to_notify = nil, nil
+      @unique_id = nil
       self
     end
     
@@ -51,26 +58,24 @@ module EM_GNTP
     end
     
     def to_register
-      @to_register ||= \
-        %w{display_name enabled icon}.inject({}) do |memo, attr|
-          if val = self.__send__(:"#{attr}")
-            memo["Notification-#{growlify_key(attr)}"] = val
-          end
-          memo
-        end.merge(@headers)
+      %w{display_name enabled}.inject({}) do |memo, attr|
+        if val = self.__send__(:"#{attr}")
+          memo["Notification-#{growlify_key(attr)}"] = val
+        end
+        memo
+      end.merge(self.headers)
     end
     
     def to_notify
-      @to_notify ||= \
-        %w{name title text sticky priority coalescing_id}.inject({}) do |memo, attr|
-          if val = self.__send__(:"#{attr}")
-            memo["Notification-#{growlify_key(attr)}"] = val
-          end
-          memo
-        end.merge({GNTP_APPLICATION_NAME_KEY => self.application_name}).
-            merge({GNTP_NOTIFICATION_ID_KEY => unique_id}).
-            merge(@callback).
-            merge(@headers)
+      %w{name title text sticky priority coalescing_id}.inject({}) do |memo, attr|
+        if val = self.__send__(:"#{attr}")
+          memo["Notification-#{growlify_key(attr)}"] = val
+        end
+        memo
+      end.merge({GNTP_APPLICATION_NAME_KEY => self.application_name}).
+          merge({GNTP_NOTIFICATION_ID_KEY => unique_id}).
+          merge(@callback).
+          merge(self.headers)
     end
     
     def to_request
@@ -81,24 +86,30 @@ module EM_GNTP
     end
     
     def header key, value
-      @headers[growlify_key(key)] = value
+      self.headers[growlify_key(key)] = value
+    end
+
+    def icon(uri_or_file)
+      # TODO if not uri
+      header GNTP_NOTIFICATION_ICON_KEY, uri_or_file
     end
     
-    def callback name = nil, opts = {}
-      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY] = name
-      if opts[:type]
-        @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY] = opts[:type]
-      end
-      if opts[:target]
-        @callback[GNTP_NOTIFICATION_CALLBACK_TARGET_KEY] = opts[:target]
-      end
+    # Note defaults name and type to notification name
+    def callback *args
+      opts = ((Hash === args.last) ? args.pop : {})
+      name = args.shift || opts[:context] || self.name
+      type = opts[:type] || self.name
+      target = opts[:target]
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY] = name if name
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY] = type if type
+      @callback[GNTP_NOTIFICATION_CALLBACK_TARGET_KEY] = target if target
       @callback
     end
     
-    protected 
+   protected 
     
-   def unique_id
-      UUIDTools::UUID.timestamp_create.to_s
+    def unique_id
+      @unique_id ||= UUIDTools::UUID.timestamp_create.to_s
     end
     
   end

@@ -44,8 +44,10 @@ module EM_GNTP
                                }
     
     GNTP_APPLICATION_NAME_KEY = 'Application-Name'
+    GNTP_APPLICATION_ICON_KEY = 'Application-Icon'
     GNTP_NOTIFICATION_COUNT_KEY = 'Notifications-Count'
     GNTP_NOTIFICATION_NAME_KEY = 'Notification-Name'
+    GNTP_NOTIFICATION_ICON_KEY = 'Notification-Icon'
     GNTP_NOTIFICATION_ID_KEY  = 'Notification-ID'
     GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY = 'Notification-Callback-Context'
     GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY = 'Notification-Callback-Context-Type'

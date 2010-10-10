@@ -26,7 +26,7 @@ module EM_GNTP
       to_request[key]
     end
     
-    def application_name; self.headers[GNTP_APPLICATION_NAME_KEY]; end
+    def name; self.headers[GNTP_APPLICATION_NAME_KEY]; end
     
     def register(&blk)
       if blk.arity == 1
@@ -37,18 +37,23 @@ module EM_GNTP
       send_register
     end
     
-    def notify(name, title = nil, opts = {}, &blk)
+    def notify(name, *args, &blk)
       return unless n = self.notifications[name]
-      n.reset!    # forces new notification id
-      n.title = title ? title : application_name
+      opts = ((Hash === args.last) ? args.pop : {})
+      title = args.shift
+      n = n.dup    # copies attributes so not overwritten
+      n.title = title ? title : self.name
+      if cb = opts.delete(:callback)
+        n.callback(cb) 
+      end
       opts.each_pair {|k, v| n.__send__ :"#{k}=", v}
-      send_notify(n, &blk)      
+      send_notify(n, &blk)
     end
     
     def notification(name, *args)
       n = EM_GNTP::Notification.new(name, *args)
       yield(n) if block_given?
-      n.application_name = application_name
+      n.application_name = self.name
       self.notifications[name] = n
     end
    
@@ -64,8 +69,9 @@ module EM_GNTP
       self.headers[growlify_key(key)] = value
     end
     
-    def icon(file_or_uri)
-      #TODO
+    def icon(uri_or_file)
+      # TODO if not uri
+      header GNTP_APPLICATION_ICON_KEY, uri_or_file
     end
     
     def binary(key, value_or_io)
