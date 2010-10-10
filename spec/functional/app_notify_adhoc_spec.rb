@@ -20,30 +20,54 @@ describe 'EM_GNTP::App #notify with ad-hoc callback' do
     app.register do
       notification 'Foo' do |n|
         n.display_name = 'Hoo'
-        n.callback 'You', :type => 'shiny'
+        n.callback 'First', :type => '1'
       end
     end
    
-    app.when_click :type => 'dull' do |resp|
+    app.when_click :type => '2' do |resp|
       cb_count += 1
     end
         
-    app.when_click 'Me' do |resp|
+    app.when_click 'Second' do |resp|
       cb_count += 1
     end
     
-    app.when_click 'You' do |resp|
-      flunk 'Expected callback context \'Me\', got \'You\''
+    app.when_click 'First' do |resp|
+      flunk 'Expected callback context \'Second\', got \'First\''
     end
     
-    app.when_click :type => 'shiny' do |resp|
-      flunk 'Expected callback context type \'dull\', got \'shiny\''
+    app.when_click :type => '1' do |resp|
+      flunk 'Expected callback context type \'2\', got \'1\''
     end
         
-    app.notify('Foo', :display_name => 'Who', :callback => {:context => 'Me', :type => 'dull'})
+    app.notify('Foo', :callback => {:context => 'Second', :type => '2'})
 
     cb_count.must_equal 2
-    app['notifications']['Foo']['Notification-Display-Name'].must_equal 'Hoo'
+  end
+
+  it 'should trigger callback with ad-hoc state, but not change state of registered callback' do
+  
+    app = @subject
+    app.register do
+      notification 'Foo' do |n|
+        n.display_name = 'Hoo'
+        n.callback 'First', :type => '1'
+      end
+    end
+    
+    app.when_click do |resp|
+      puts resp[0..2].inspect
+      resp.context.must_equal 'Second'
+      resp.context_type.must_equal '2'
+    end
+    
+    app.notify('Foo', :display_name => 'Who',
+                      :callback => {:context => 'Second', :type => '2'})
+    
+    app.notifications['Foo'].display_name.must_equal 'Hoo'
+    app.notifications['Foo'].callback_context.must_equal 'First'
+    app.notifications['Foo'].callback_type.must_equal '1'
+    
   end
   
 end

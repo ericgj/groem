@@ -98,17 +98,16 @@ __________
   describe 'when valid NOTIFY response -CALLBACK' do
     
     before do
-      @input = <<-__________
-GNTP/1.0 -CALLBACK NONE
-Application-Name: SurfWriter 
-Response-Action: NOTIFY
-Notification-ID: 999
-Notification-Callback-Result : CLICKED
- Notification-Callback-Timestamp: 2010-10-01 22:21:00Z
-Notification-Callback-Context :Test
-Notification-Callback-Context-Type: Confirm
-
-__________
+      @input = [
+"GNTP/1.0 -CALLBACK NONE",
+"Application-Name: SurfWriter",
+"Response-Action: NOTIFY",
+"Notification-ID: 999",
+"Notification-Callback-Result : CLICKED",
+" Notification-Callback-Timestamp: 2010-10-01 22:21:00Z",
+"Notification-Callback-Context :Test",
+"Notification-Callback-Context-Type: Confirm"
+].join("\r\n") + "\r\n"
       dummy = Class.new { include(EM_GNTP::Marshal::Response) }
       @subject = dummy.load(@input, false)
     end

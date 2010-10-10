@@ -92,7 +92,7 @@ module EM_GNTP
     end
     
     def post_init
-      reset_state
+      reset_state!
       #puts @req.dump.inspect
       send_data @req.dump
     end
@@ -102,15 +102,22 @@ module EM_GNTP
         #print "#{line.inspect}"
         @lines << line
       end
-      receive_message @lines.join("\r\n") + "\r\n" if eof?
+      if eof?
+        receive_message @lines.join("\r\n") + "\r\n"
+        reset_message_buffer!
+      end
     end
 
     protected
 
-    def reset_state
+    def reset_state!
+      @state = :init
+      reset_message_buffer!
+    end
+
+    def reset_message_buffer!
       @buffer = BufferedTokenizer.new("\r\n")
       @lines = []
-      @state = :init
     end
     
     def eof?

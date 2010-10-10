@@ -180,7 +180,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -254,7 +254,7 @@ describe 'EM_GNTP::Client' do
       
       EM.run {
         puts "Client sending request"
-        connect = EM_GNTP::Client.register(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
         
         connect.when_ok do |resp|
           puts "Client received OK response"
@@ -294,6 +294,68 @@ describe 'EM_GNTP::Client' do
       @error_count.must_equal 1
     end
       
+  end
+  
+  describe 'NOTIFY request, callback specified, handle only CALLBACK response' do
+  
+    before do
+      @callback_delay = 3
+      @callback_result = 'CLICKED'
+      @p_svr = DummyServerHelper.fork_server(:notify => '-OK', 
+                                             :callback => [@callback_result, @callback_delay])
+
+      @input_env = { 'protocol' => 'GNTP',
+                     'version' => '1.0',
+                     'request_method' => 'NOTIFY',
+                     'encryption_id' => 'NONE'
+                    }
+      @input_hdrs = {'Application-Name' => 'SurfWriter',
+                     'Notification-ID' => '999',
+                     'Notification-Callback-Context' => 'default',
+                     'Notification-Callback-Context-Type' => 'confirm'
+                    }
+                                          
+      @input = MarshalHelper.dummy_request(
+                   @input_env, @input_hdrs, {})
+      
+      EM_GNTP::Client.response_class = MarshalHelper.dummy_response_class
+      
+      @error_count = 0
+      @callback_count = 0
+      
+      EM.run {
+        puts "Client sending request"
+        connect = EM_GNTP::Client.notify(@input, 'localhost', DummyServerHelper::DEFAULT_PORT)
+        
+        connect.errback do |resp|
+          puts "Client received error response"
+          @error_count += 1
+        end
+        
+        connect.when_callback do |resp|
+          puts "Client received callback response"
+          puts resp.inspect
+          resp[2]['Notification-Callback-Result'].must_equal @callback_result
+          @callback_count += 1
+        end
+        
+        EM.add_timer(@callback_delay + 1) { EM.stop }
+     }
+      
+    end
+
+    after do
+      DummyServerHelper.kill_server(@p_svr)
+    end
+    
+    it 'should receive back one callback response after delay' do
+      @callback_count.must_equal 1 
+    end
+
+    it 'should receive no error response' do
+      @error_count.must_equal 0
+    end
+    
   end
   
 end

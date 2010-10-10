@@ -26,12 +26,14 @@ module EM_GNTP
       title = args.shift
       self.environment, self.headers, @callback = {}, {}, {}
       self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
-      self.name = name; self.title = title
+      self.name = name.to_s if name
+      self.title = title.to_s if title
+      self.headers = opts.delete(:headers) || {}
       opts.each_pair do |opt, val| 
         if self.respond_to?(:"#{opt}=")   
-          self.__send__ :"#{opt}=", val
+          self.__send__ :"#{opt}=", val.to_s
         else
-          header(opt, val)
+          header(opt, val.to_s)
         end
       end
       reset!
@@ -41,20 +43,60 @@ module EM_GNTP
       to_request[key]
     end
     
-    def dup
-      attrs = {}; self.each_pair {|k, v| attrs[k] = v.dup if v}
-      ret = self.class.new(self.name, attrs)
-      ret.callback(@callback) if @callback
-      ret
-    end
-    
     def reset!
-      @unique_id = nil
+      @to_request = nil
       self
     end
     
     def reset_callback!
       @callback = {}
+    end
+
+    def dup
+      attrs = {}; self.each_pair {|k, v| attrs[k] = v.dup if v}
+      n = self.class.new(self.name, attrs)
+      n.callback(:context => callback_context, 
+                 :type => callback_type,
+                 :target => callback_target) if @callback
+      n
+    end
+    
+    def header key, value
+      reset!
+      self.headers[growlify_key(key)] = value
+    end
+
+    def icon(uri_or_file)
+      # TODO if not uri
+      reset!
+      header GNTP_NOTIFICATION_ICON_KEY, uri_or_file
+    end
+    
+    # Note defaults name and type to notification name
+    def callback *args
+      opts = ((Hash === args.last) ? args.pop : {})
+      name = args.shift || opts[:context] || self.name
+      type = opts[:type] || self.name
+      target = opts[:target]
+      reset!
+      reset_callback!
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY] = name if name
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY] = type if type
+      @callback[GNTP_NOTIFICATION_CALLBACK_TARGET_KEY] = target if target
+      @callback
+    end
+    
+    def callback_context
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY]
+    end
+    
+    def callback_type
+      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY]
+    end
+    alias_method :callback_context_type, :callback_type
+    
+    def callback_target
+      @callback[GNTP_NOTIFICATION_CALLBACK_TARGET_KEY]
     end
     
     def to_register
@@ -79,37 +121,17 @@ module EM_GNTP
     end
     
     def to_request
-      {'environment' => environment,
-       'headers' => to_notify,
-       'notifications' => {}
-      }
-    end
-    
-    def header key, value
-      self.headers[growlify_key(key)] = value
-    end
-
-    def icon(uri_or_file)
-      # TODO if not uri
-      header GNTP_NOTIFICATION_ICON_KEY, uri_or_file
-    end
-    
-    # Note defaults name and type to notification name
-    def callback *args
-      opts = ((Hash === args.last) ? args.pop : {})
-      name = args.shift || opts[:context] || self.name
-      type = opts[:type] || self.name
-      target = opts[:target]
-      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY] = name if name
-      @callback[GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY] = type if type
-      @callback[GNTP_NOTIFICATION_CALLBACK_TARGET_KEY] = target if target
-      @callback
+      @to_request ||= \
+        {'environment' => environment,
+         'headers' => to_notify,
+         'notifications' => {}
+        }
     end
     
    protected 
     
     def unique_id
-      @unique_id ||= UUIDTools::UUID.timestamp_create.to_s
+      UUIDTools::UUID.timestamp_create.to_s
     end
     
   end
