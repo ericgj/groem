@@ -16,7 +16,7 @@ Note this is very much beta.  The core functionality is fairly well tested, but 
 ### Registration
 
 
-      app = GNTP::App.new('MyApp', :host => 'localhost')
+      app = Groem::App.new('MyApp', :host => 'localhost')
       
       app.register do
         icon 'http://www.example.com/icon.png'
