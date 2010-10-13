@@ -6,6 +6,8 @@ For documentation of the GNTP protocol, see:
 
 and the [Growl for Windows mailing list](http://groups.google.com/group/growl-for-windows/topics?start=).
 
+To install as a gem: `gem install groem`
+
 Note this is very much beta.  The core functionality is fairly well tested, but the following features are not yet implemented:
 
 - Binary resources (`x-growl-resource://`) in requests, including for icons
