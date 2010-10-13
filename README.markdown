@@ -20,7 +20,9 @@ Groem does not rely on any OS-specific libraries per se. It's simply an implemen
 
 ## Motivation
 
-I wanted to be able to send desktop notifications on my Windows box from ruby running in cygwin. Call me crazy but I seem to enjoy hacking at Windows from cygwin...!  And I wanted the experience of implementing a protocol in Eventmachine. 
+I wanted to be able to send desktop notifications on my Windows box from ruby running in cygwin. Call me crazy but I seem to enjoy hacking at Windows from cygwin...!  (But no fear, if you are running ruby on Windows it should work exactly the same.)
+
+Also, I wanted the experience of implementing a protocol in Eventmachine. 
 
 Groem is a spin-off of sorts from my project for the free and wonderful [Ruby Mendicant University (RMU)](http://blog.majesticseacreature.com/).
 
