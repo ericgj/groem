@@ -26,6 +26,9 @@ Also, I wanted the experience of implementing a protocol in Eventmachine.
 
 Groem is a spin-off of sorts from my project for the free and wonderful [Ruby Mendicant University (RMU)](http://blog.majesticseacreature.com/).
 
+## Note about Eventmachine
+
+Although Groem deals with network communication within an EM reactor, **you do not have to have a reactor running already to use it**.  If you do, it will run within it, but if you don't, it will start one up and close it down after it's done sending and receiving.
 
 ## Examples of usage
 
