@@ -28,6 +28,7 @@ module Groem
       self.environment = DEFAULT_ENV.merge(opts.delete(:environment) || {})
       self.name = name.to_s if name
       self.title = title.to_s if title
+      self.enabled = 'True'
       self.headers = opts.delete(:headers) || {}
       opts.each_pair do |opt, val| 
         if self.respond_to?(:"#{opt}=")   

@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__))
 require 'rubygems'
 require 'bundler'
-Bundler.setup :development
+Bundler.setup :default
 
 require 'lib/groem'
 
@@ -9,5 +9,6 @@ Dir[File.expand_path(File.join(File.dirname(__FILE__), 'shared', '**', '*.rb'))]
   load f
 end
 
+Bundler.setup :development
 require 'minitest/spec'
 MiniTest::Unit.autorun

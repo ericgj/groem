@@ -23,6 +23,11 @@ describe 'Groem::Notification #[]' do
       @subject['environment'].must_equal Groem::Notification::DEFAULT_ENV
     end
     
+    it 'should default enabled to \'True\' when option not passed' do
+      @subject = Groem::Notification.new('verb')
+      @subject.enabled.must_equal 'True'
+    end
+    
     it 'should merge keys from input environment option into default environment' do
       input = {'version' => '1.2', 
                 'request_method' => 'HELLO',
