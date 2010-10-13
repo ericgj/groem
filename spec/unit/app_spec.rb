@@ -61,11 +61,12 @@ describe 'Groem::App #[]' do
   
   describe 'after setting notification' do
   
-    it 'should set the notifications hash with basic info for register' do
+    it 'should set the notifications hash defaulting enabled to true' do
       @subject = Groem::App.new('thing')
       @subject.notification 'action' do end
       @subject['notifications'].keys.must_include 'action'
-      @subject['notifications']['action'].must_be_empty
+      @subject['notifications']['action'].keys.must_include 'Notification-Enabled'
+      @subject['notifications']['action']['Notification-Enabled'].must_equal 'True'
     end
         
   end
