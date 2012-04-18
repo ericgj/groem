@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.files        = `git ls-files -c`.split("\n")
   s.platform     = Gem::Platform::RUBY
-  s.require_path = 'lib'
+  s.require_path = '.'
   s.rubyforge_project = ''
   s.required_rubygems_version = '>= 1.3.6'
   
