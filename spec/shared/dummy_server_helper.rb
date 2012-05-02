@@ -4,7 +4,9 @@ module DummyServerHelper
   DEFAULT_PORT = Groem::Dummy::Server::DEFAULT_PORT
   
   def self.fork_server(opts = {})
-    fork {
+    sleep(1)
+
+    pid = fork {
       puts '-------------- server process fork ------------------'
       Groem::Dummy::Server.reset_canned_responses
       if opts[:register]
@@ -21,11 +23,14 @@ module DummyServerHelper
         Groem::Dummy::Server.listen
       }
       puts '-------------- server process exiting -----------'
-    }    
+    }
+    sleep(1)
+    pid
   end
   
   def self.kill_server(pid)
     Process.kill("INT", pid)
+    #sleep(1)
   end
   
 end

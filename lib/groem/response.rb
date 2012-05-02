@@ -22,7 +22,9 @@ module Groem
       self.notification_id = resp[1][GNTP_NOTIFICATION_ID_KEY]
       self.context = resp[2][GNTP_NOTIFICATION_CALLBACK_CONTEXT_KEY]
       self.context_type = resp[2][GNTP_NOTIFICATION_CALLBACK_CONTEXT_TYPE_KEY]
-      self.callback_result = resp[2][GNTP_NOTIFICATION_CALLBACK_RESULT_KEY]
+      # On Growl OSX, we get CLOSED/CLICKED instead of CLOSE/CLICK
+      callback_result_key = resp[2][GNTP_NOTIFICATION_CALLBACK_RESULT_KEY]
+      self.callback_result = growlify_action(callback_result_key)
       self.method = if self.status.to_i == 0
                       if self.callback_result
                         GNTP_CALLBACK_RESPONSE
